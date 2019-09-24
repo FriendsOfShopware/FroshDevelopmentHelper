@@ -1,0 +1,29 @@
+{
+    "name": "frosh/development-helper",
+    "description": "Development Helper",
+    "type": "shopware-platform-plugin",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "FriendsOfShopware",
+            "homepage": "https://friendsofshopware.de"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "Frosh\\DevelopmentHelper\\": "src/"
+        }
+    },
+    "extra": {
+        "shopware-plugin-class": "Frosh\\DevelopmentHelper\\FroshDevelopmentHelper",
+        "copyright": "FriendsOfShopware",
+        "label": {
+            "de-DE": "Hilfreiche Tools für die Entwicklung",
+            "en-GB": "Helpful development tools"
+        },
+        "description": {
+            "de-DE": "Zeigt dir Blöcke, Template Variabeln an",
+            "en-GB": "Zeigt dir Blöcke, Template Variabeln an"
+        }
+    }
+}
