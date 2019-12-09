@@ -1,0 +1,15 @@
+<?xml version="1.0" ?>
+
+<container xmlns="http://symfony.com/schema/dic/services"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd">
+
+    <services>
+        <defaults autoconfigure="true" autowire="true"/>
+
+        <service id="Frosh\DevelopmentHelper\Component\Generator\Entity\EntityLoader"/>
+        <service id="Frosh\DevelopmentHelper\Component\Generator\Entity\EntityConsoleQuestion"/>
+        <service id="Frosh\DevelopmentHelper\Component\Generator\Entity\EntityGenerator"/>
+        <service id="Frosh\DevelopmentHelper\Command\MakeEntityCommand"/>
+    </services>
+</container>

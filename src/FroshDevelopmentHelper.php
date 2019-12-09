@@ -7,6 +7,10 @@ use Frosh\DevelopmentHelper\Component\DependencyInjection\DisableTwigCacheCompil
 use Shopware\Core\Framework\Plugin;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 
+if (file_exists(__DIR__ . '/../vendor/autoload.php')) {
+    require_once __DIR__ . '/../vendor/autoload.php';
+}
+
 class FroshDevelopmentHelper extends Plugin
 {
     public function build(ContainerBuilder $container): void

@@ -14,6 +14,9 @@
             "Frosh\\DevelopmentHelper\\": "src/"
         }
     },
+    "require": {
+        "nikic/php-parser": "4.3.0"
+    },
     "extra": {
         "shopware-plugin-class": "Frosh\\DevelopmentHelper\\FroshDevelopmentHelper",
         "copyright": "FriendsOfShopware",

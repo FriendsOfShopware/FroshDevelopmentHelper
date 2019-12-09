@@ -7,5 +7,6 @@
     <imports>
         <import resource="services/twig.xml"/>
         <import resource="services/subscriber.xml"/>
+        <import resource="services/entity_generator.xml"/>
     </imports>
 </container>
