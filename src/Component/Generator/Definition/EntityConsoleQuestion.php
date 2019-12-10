@@ -1,22 +1,10 @@
 <?php
 
-namespace Frosh\DevelopmentHelper\Component\Generator\Entity;
+namespace Frosh\DevelopmentHelper\Component\Generator\Definition;
 
-use Shopware\Core\Framework\DataAbstractionLayer\Field\BlobField;
-use Shopware\Core\Framework\DataAbstractionLayer\Field\BoolField;
-use Shopware\Core\Framework\DataAbstractionLayer\Field\DateField;
-use Shopware\Core\Framework\DataAbstractionLayer\Field\DateTimeField;
-use Shopware\Core\Framework\DataAbstractionLayer\Field\EmailField;
-use Shopware\Core\Framework\DataAbstractionLayer\Field\FkField;
 use Shopware\Core\Framework\DataAbstractionLayer\Field\Flag\PrimaryKey;
 use Shopware\Core\Framework\DataAbstractionLayer\Field\Flag\Required;
-use Shopware\Core\Framework\DataAbstractionLayer\Field\FloatField;
 use Shopware\Core\Framework\DataAbstractionLayer\Field\IdField;
-use Shopware\Core\Framework\DataAbstractionLayer\Field\IntField;
-use Shopware\Core\Framework\DataAbstractionLayer\Field\LongTextField;
-use Shopware\Core\Framework\DataAbstractionLayer\Field\LongTextWithHtmlField;
-use Shopware\Core\Framework\DataAbstractionLayer\Field\PasswordField;
-use Shopware\Core\Framework\DataAbstractionLayer\Field\StringField;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Question\Question;
@@ -24,26 +12,11 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 
 class EntityConsoleQuestion
 {
-    private $fieldsTypes = [
-        StringField::class,
-        IntField::class,
-        BoolField::class,
-        BlobField::class,
-        DateField::class,
-        DateTimeField::class,
-        EmailField::class,
-        FkField::class,
-        FloatField::class,
-        LongTextField::class,
-        LongTextWithHtmlField::class,
-        PasswordField::class
-    ];
+    private $fieldsTypes;
 
     public function __construct()
     {
-        foreach ($this->fieldsTypes as &$fieldsType) {
-            $fieldsType = str_replace('Shopware\Core\Framework\DataAbstractionLayer\Field\\', '', $fieldsType);
-        }
+        $this->fieldsTypes = TypeMapping::getCompletionTypes();
     }
 
     /**
@@ -147,7 +120,7 @@ class EntityConsoleQuestion
     private function hasIdField(array $fieldCollection): bool
     {
         foreach ($fieldCollection as $element) {
-            if ($element instanceof IdField) {
+            if ($element->name === IdField::class) {
                 return true;
             }
         }

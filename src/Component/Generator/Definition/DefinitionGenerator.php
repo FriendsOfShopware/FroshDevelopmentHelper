@@ -1,8 +1,9 @@
 <?php
 
-namespace Frosh\DevelopmentHelper\Component\Generator\Entity;
+namespace Frosh\DevelopmentHelper\Component\Generator\Definition;
 
 use Frosh\DevelopmentHelper\Component\Generator\UseHelper;
+use PhpParser\BuilderFactory;
 use PhpParser\Node;
 use PhpParser\Node\Arg;
 use PhpParser\Node\Expr\Array_;
@@ -21,9 +22,10 @@ use PhpParser\Node\Stmt\UseUse;
 use PhpParser\NodeFinder;
 use PhpParser\ParserFactory;
 use PhpParser\PrettyPrinter\Standard;
+use Shopware\Core\Framework\DataAbstractionLayer\EntityDefinition;
 use Shopware\Core\Framework\DataAbstractionLayer\FieldCollection;
 
-class EntityGenerator
+class DefinitionGenerator
 {
     public function generate(LoaderResult $loaderResult): void
     {
@@ -55,6 +57,8 @@ class EntityGenerator
             ]
         ))];
 
+        $namespace->stmts = array_merge($useHelper->getStms(), $namespace->stmts);
+
         $printer = new Standard();
 
         file_put_contents($loaderResult->folder . $loaderResult->entityName . 'Definition.php', $printer->prettyPrintFile([$namespace]));
@@ -62,9 +66,11 @@ class EntityGenerator
 
     private function buildNewNamespace(LoaderResult $loaderResult, UseHelper $useHelper): Namespace_
     {
+        $builder = new BuilderFactory();
         $namespace = new Namespace_(new Name($loaderResult->namespace));
 
         $class = new Class_(new Identifier($loaderResult->entityName . 'Definition'));
+        $class->extends = new Name('EntityDefinition');
 
         $entityName = new ClassMethod(new Identifier('getEntityName'));
         $entityName->returnType = new Name('string');
@@ -78,9 +84,22 @@ class EntityGenerator
         $class->stmts[] = $entityName;
         $class->stmts[] = $defineFields;
 
+        $class->stmts[] = $builder->method('getEntityClass')
+            ->makePublic()
+            ->setReturnType(new Name('string'))
+            ->addStmt(new Return_($builder->classConstFetch($loaderResult->entityName . 'Entity', 'class')))
+            ->getNode();
+
+        $class->stmts[] = $builder->method('getCollectionClass')
+            ->makePublic()
+            ->setReturnType(new Name('string'))
+            ->addStmt(new Return_($builder->classConstFetch($loaderResult->entityName . 'Collection', 'class')))
+            ->getNode();
+
         $namespace->stmts[] = $class;
 
         $useHelper->addUse(FieldCollection::class);
+        $useHelper->addUse(EntityDefinition::class);
 
         return $namespace;
     }

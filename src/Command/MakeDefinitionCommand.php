@@ -2,17 +2,19 @@
 
 namespace Frosh\DevelopmentHelper\Command;
 
-use Frosh\DevelopmentHelper\Component\Generator\Entity\EntityConsoleQuestion;
-use Frosh\DevelopmentHelper\Component\Generator\Entity\EntityGenerator;
-use Frosh\DevelopmentHelper\Component\Generator\Entity\EntityLoader;
+use Frosh\DevelopmentHelper\Component\Generator\Definition\CollectionGenerator;
+use Frosh\DevelopmentHelper\Component\Generator\Definition\EntityConsoleQuestion;
+use Frosh\DevelopmentHelper\Component\Generator\Definition\DefinitionGenerator;
+use Frosh\DevelopmentHelper\Component\Generator\Definition\EntityGenerator;
+use Frosh\DevelopmentHelper\Component\Generator\Definition\EntityLoader;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
-class MakeEntityCommand extends Command
+class MakeDefinitionCommand extends Command
 {
-    public static $defaultName = 'frosh:generate:entity';
+    public static $defaultName = 'frosh:make:definition';
 
     /**
      * @var EntityLoader
@@ -25,16 +27,33 @@ class MakeEntityCommand extends Command
     private $entityConsoleQuestion;
 
     /**
+     * @var DefinitionGenerator
+     */
+    private $definitionGenerator;
+
+    /**
      * @var EntityGenerator
      */
     private $entityGenerator;
 
-    public function __construct(EntityLoader $entityLoader, EntityConsoleQuestion $entityConsoleQuestion, EntityGenerator $entityGenerator)
-    {
+    /**
+     * @var CollectionGenerator
+     */
+    private $collectionGenerator;
+
+    public function __construct(
+        EntityLoader $entityLoader,
+        EntityConsoleQuestion $entityConsoleQuestion,
+        DefinitionGenerator $definitionGenerator,
+        EntityGenerator $entityGenerator,
+        CollectionGenerator $collectionGenerator
+    ) {
         parent::__construct();
         $this->entityLoader = $entityLoader;
         $this->entityConsoleQuestion = $entityConsoleQuestion;
+        $this->definitionGenerator = $definitionGenerator;
         $this->entityGenerator = $entityGenerator;
+        $this->collectionGenerator = $collectionGenerator;
     }
 
     protected function configure(): void
@@ -50,8 +69,8 @@ class MakeEntityCommand extends Command
 
         $result->fields = $this->entityConsoleQuestion->question($input, $output, $result->fields);
 
+        $this->definitionGenerator->generate($result);
         $this->entityGenerator->generate($result);
+        $this->collectionGenerator->generate($result);
     }
-
-
 }

@@ -1,6 +1,6 @@
 <?php
 
-namespace Frosh\DevelopmentHelper\Component\Generator\Entity;
+namespace Frosh\DevelopmentHelper\Component\Generator\Definition;
 
 class LoaderResult
 {

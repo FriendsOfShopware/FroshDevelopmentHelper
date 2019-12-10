@@ -1,6 +1,6 @@
 <?php
 
-namespace Frosh\DevelopmentHelper\Component\Generator\Entity;
+namespace Frosh\DevelopmentHelper\Component\Generator\Definition;
 
 use PhpParser\Node;
 use PhpParser\Node\Stmt\ClassMethod;
@@ -99,6 +99,18 @@ class EntityLoader
                         break;
                     case $arg->value instanceof Node\Scalar\LNumber:
                         $args[] = (int) $arg->value->value;
+                        break;
+                    case $arg->value instanceof Node\Expr\ConstFetch:
+                        $value = (string) $arg->value->name;
+                        if ($value === 'null') {
+                            $value = null;
+                        } elseif ($value === 'false') {
+                            $value = false;
+                        } elseif ($value === 'true') {
+                            $value = true;
+                        }
+
+                        $args[] = $value;
                         break;
                     default:
                         throw new \RuntimeException('Type not supported: ' . get_class($arg->value));

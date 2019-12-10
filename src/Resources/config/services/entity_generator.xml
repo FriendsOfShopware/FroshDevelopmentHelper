@@ -7,9 +7,11 @@
     <services>
         <defaults autoconfigure="true" autowire="true"/>
 
-        <service id="Frosh\DevelopmentHelper\Component\Generator\Entity\EntityLoader"/>
-        <service id="Frosh\DevelopmentHelper\Component\Generator\Entity\EntityConsoleQuestion"/>
-        <service id="Frosh\DevelopmentHelper\Component\Generator\Entity\EntityGenerator"/>
-        <service id="Frosh\DevelopmentHelper\Command\MakeEntityCommand"/>
+        <service id="Frosh\DevelopmentHelper\Component\Generator\Definition\EntityLoader"/>
+        <service id="Frosh\DevelopmentHelper\Component\Generator\Definition\EntityConsoleQuestion"/>
+        <service id="Frosh\DevelopmentHelper\Component\Generator\Definition\DefinitionGenerator"/>
+        <service id="Frosh\DevelopmentHelper\Component\Generator\Definition\EntityGenerator"/>
+        <service id="Frosh\DevelopmentHelper\Component\Generator\Definition\CollectionGenerator"/>
+        <service id="Frosh\DevelopmentHelper\Command\MakeDefinitionCommand"/>
     </services>
 </container>
