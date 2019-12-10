@@ -2,9 +2,11 @@
 
 namespace Frosh\DevelopmentHelper\Component\Generator\Definition;
 
+use Shopware\Core\Framework\DataAbstractionLayer\Field\FkField;
 use Shopware\Core\Framework\DataAbstractionLayer\Field\Flag\PrimaryKey;
 use Shopware\Core\Framework\DataAbstractionLayer\Field\Flag\Required;
 use Shopware\Core\Framework\DataAbstractionLayer\Field\IdField;
+use Shopware\Core\Framework\DataAbstractionLayer\Field\ManyToOneAssociationField;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Question\Question;
@@ -12,11 +14,20 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 
 class EntityConsoleQuestion
 {
+    /**
+     * @var array
+     */
     private $fieldsTypes;
 
-    public function __construct()
+    /**
+     * @var array
+     */
+    private $entityDefinitions;
+
+    public function __construct(array $entityDefinitions)
     {
         $this->fieldsTypes = TypeMapping::getCompletionTypes();
+        $this->entityDefinitions = $entityDefinitions;
     }
 
     /**
@@ -38,9 +49,11 @@ class EntityConsoleQuestion
                 break;
             }
 
-            $currentFields[] = $field->name;
+            $currentFields[] = $field->getPropertyName();
             $fieldCollection[] = $field;
         }
+
+        $fieldCollection = $this->addMissingFkFields($fieldCollection);
 
         return $fieldCollection;
     }
@@ -89,6 +102,22 @@ class EntityConsoleQuestion
                 continue;
             }
 
+            if ($parameter->name === 'referenceClass') {
+                $question = new Question('Reference Class');
+                $question->setAutocompleterValues($this->entityDefinitions);
+                $question->setValidator(function ($value) {
+                    if (!in_array($value, $this->entityDefinitions, true)) {
+                        throw new \InvalidArgumentException(sprintf('%s is an invalid reference class', $value));
+                    }
+
+                    return $value;
+                });
+                $value = $io->askQuestion($question);
+
+                $args[] = $value . '::class';
+                continue;
+            }
+
             $default = null;
             if ($parameter->isDefaultValueAvailable()) {
                 $default = $parameter->getDefaultValue();
@@ -97,6 +126,9 @@ class EntityConsoleQuestion
             if ($parameter->name === 'storageName' && $default === null) {
                 $default = $fieldName;
             }
+            if (is_bool($default)) {
+                $default = $default ? 'true' : 'false';
+            }
 
             $question = new Question('Parameter ' . $parameter->name, $default);
             $answer = $io->askQuestion($question);
@@ -104,7 +136,16 @@ class EntityConsoleQuestion
                 $answer = true;
             } else if($answer === 'false') {
                 $answer = false;
+            } else if(strlen($answer) && $parameter->hasType()) {
+                $parameterType = (string) $parameter->getType();
+
+                if ($parameterType === 'int') {
+                    $answer = (int) $answer;
+                } else if($parameterType === 'float') {
+                    $answer = (float) $answer;
+                }
             }
+
 
             $args[] = $answer;
         }
@@ -114,7 +155,7 @@ class EntityConsoleQuestion
             $fieldName
         ));
 
-        return new Field($type, $args, $isNullable ? [] : [PrimaryKey::class]);
+        return new Field($type, $args, $isNullable ? [] : [Required::class]);
     }
 
     private function hasIdField(array $fieldCollection): bool
@@ -131,7 +172,33 @@ class EntityConsoleQuestion
     private function getCurrentFields(array $fieldCollection): array
     {
         return array_map(static function (Field $field) {
-            return $field->name;
+            return $field->getPropertyName();
         }, $fieldCollection);
+    }
+
+    private function addMissingFkFields(array $fieldCollection): array
+    {
+        /** @var Field $field */
+        foreach ($fieldCollection as $field) {
+            if ($field->name === ManyToOneAssociationField::class) {
+                $haveFkField = false;
+                $associationStorageName = $field->getStorageName();
+
+                /** @var Field $nField */
+                foreach ($fieldCollection as $nField) {
+                    if ($nField->name !== $field->name && $nField->getStorageName() === $associationStorageName) {
+                        $haveFkField = true;
+                    }
+                }
+
+                if ($haveFkField) {
+                    continue;
+                }
+
+                $fieldCollection[] = new Field(FkField::class, [$associationStorageName, $associationStorageName, $field->getReferenceClass()], $field->flags);
+            }
+        }
+
+        return $fieldCollection;
     }
 }

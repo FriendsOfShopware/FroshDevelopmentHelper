@@ -8,10 +8,15 @@
         <defaults autoconfigure="true" autowire="true"/>
 
         <service id="Frosh\DevelopmentHelper\Component\Generator\Definition\EntityLoader"/>
-        <service id="Frosh\DevelopmentHelper\Component\Generator\Definition\EntityConsoleQuestion"/>
+
+        <service id="Frosh\DevelopmentHelper\Component\Generator\Definition\EntityConsoleQuestion">
+            <argument type="string">%frosh_development_helper.names%</argument>
+        </service>
+
         <service id="Frosh\DevelopmentHelper\Component\Generator\Definition\DefinitionGenerator"/>
         <service id="Frosh\DevelopmentHelper\Component\Generator\Definition\EntityGenerator"/>
         <service id="Frosh\DevelopmentHelper\Component\Generator\Definition\CollectionGenerator"/>
+        <service id="Frosh\DevelopmentHelper\Component\Generator\FixCodeStyle"/>
         <service id="Frosh\DevelopmentHelper\Command\MakeDefinitionCommand"/>
     </services>
 </container>

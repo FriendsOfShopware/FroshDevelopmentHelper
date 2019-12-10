@@ -33,12 +33,10 @@ class DefinitionGenerator
             throw new \RuntimeException(sprintf('Directory "%s" was not created', $concurrentDirectory));
         }
 
-        $file = $loaderResult->folder . $loaderResult->entityName . 'Definition.php';
-
         $useHelper = new UseHelper();
 
-        if (file_exists($file)) {
-            $namespace = $this->buildNamespaceFromExistingFile($file, $loaderResult, $useHelper);
+        if (file_exists($loaderResult->getDefinitionFilePath())) {
+            $namespace = $this->buildNamespaceFromExistingFile($loaderResult->getDefinitionFilePath(), $useHelper);
         } else {
             $namespace = $this->buildNewNamespace($loaderResult, $useHelper);
         }
@@ -46,7 +44,7 @@ class DefinitionGenerator
         $nodeFinder = new NodeFinder();
 
         /** @var ClassMethod $method */
-        $method = $nodeFinder->findFirst([$namespace], function (Node $node) {
+        $method = $nodeFinder->findFirst([$namespace], static function (Node $node) {
             return $node instanceof ClassMethod && $node->name->name === 'defineFields';
         });
 
@@ -61,7 +59,7 @@ class DefinitionGenerator
 
         $printer = new Standard();
 
-        file_put_contents($loaderResult->folder . $loaderResult->entityName . 'Definition.php', $printer->prettyPrintFile([$namespace]));
+        file_put_contents($loaderResult->getDefinitionFilePath(), $printer->prettyPrintFile([$namespace]));
     }
 
     private function buildNewNamespace(LoaderResult $loaderResult, UseHelper $useHelper): Namespace_
@@ -69,13 +67,13 @@ class DefinitionGenerator
         $builder = new BuilderFactory();
         $namespace = new Namespace_(new Name($loaderResult->namespace));
 
-        $class = new Class_(new Identifier($loaderResult->entityName . 'Definition'));
+        $class = new Class_(new Identifier($loaderResult->getDefinitionClassName()));
         $class->extends = new Name('EntityDefinition');
 
         $entityName = new ClassMethod(new Identifier('getEntityName'));
         $entityName->returnType = new Name('string');
         $entityName->flags = Class_::MODIFIER_PUBLIC;
-        $entityName->stmts[] = new Return_(new String_($loaderResult->entityName));
+        $entityName->stmts[] = new Return_(new String_($loaderResult->name));
 
         $defineFields = new ClassMethod(new Identifier('defineFields'));
         $defineFields->returnType = new Identifier('FieldCollection');
@@ -87,13 +85,13 @@ class DefinitionGenerator
         $class->stmts[] = $builder->method('getEntityClass')
             ->makePublic()
             ->setReturnType(new Name('string'))
-            ->addStmt(new Return_($builder->classConstFetch($loaderResult->entityName . 'Entity', 'class')))
+            ->addStmt(new Return_($builder->classConstFetch($loaderResult->getEntityClassName(), 'class')))
             ->getNode();
 
         $class->stmts[] = $builder->method('getCollectionClass')
             ->makePublic()
             ->setReturnType(new Name('string'))
-            ->addStmt(new Return_($builder->classConstFetch($loaderResult->entityName . 'Collection', 'class')))
+            ->addStmt(new Return_($builder->classConstFetch($loaderResult->getCollectionClassName(), 'class')))
             ->getNode();
 
         $namespace->stmts[] = $class;
@@ -104,10 +102,8 @@ class DefinitionGenerator
         return $namespace;
     }
 
-    private function buildNamespaceFromExistingFile(string $entityFile, LoaderResult $loaderResult, UseHelper $useHelper): Namespace_
+    private function buildNamespaceFromExistingFile(string $entityFile, UseHelper $useHelper): Namespace_
     {
-        // Prepare useHelper
-
         $parser = (new ParserFactory())->create(ParserFactory::ONLY_PHP7);
         $ast = $parser->parse(file_get_contents($entityFile));
 
@@ -137,7 +133,12 @@ class DefinitionGenerator
             foreach ($element->args as $arg) {
                 switch (gettype($arg)) {
                     case 'string':
-                        $args[] = new Arg(new String_($arg));
+                        if (strpos($arg, '::class') !== false) {
+                            $args[] = new Arg(new Node\Expr\ClassConstFetch(new Name(substr('\\' . $arg, 0, -7)), new Identifier('class')));
+                        } else {
+                            $args[] = new Arg(new String_($arg));
+                        }
+
                         break;
                     case 'integer':
                         $args[] = new Arg(new LNumber($arg));
@@ -146,7 +147,7 @@ class DefinitionGenerator
                         $args[] = new Arg(new ConstFetch(new Name('null')));
                         break;
                     case 'boolean':
-                        $args[] = new Arg(new ConstFetch(new Name(strtolower((string) $arg))));
+                        $args[] = new Arg(new ConstFetch(new Name($arg ? 'true' : 'false')));
                         break;
                     default:
                         throw new \RuntimeException('Invalid type ' . gettype($arg));

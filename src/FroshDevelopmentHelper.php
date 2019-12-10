@@ -2,6 +2,7 @@
 
 namespace Frosh\DevelopmentHelper;
 
+use Frosh\DevelopmentHelper\Component\DependencyInjection\BuildEntityDefinitionNamesCompilerPass;
 use Frosh\DevelopmentHelper\Component\DependencyInjection\CustomProfilerExtensions;
 use Frosh\DevelopmentHelper\Component\DependencyInjection\DisableTwigCacheCompilerPass;
 use Shopware\Core\Framework\Plugin;
@@ -17,6 +18,7 @@ class FroshDevelopmentHelper extends Plugin
     {
         $container->addCompilerPass(new DisableTwigCacheCompilerPass());
         $container->addCompilerPass(new CustomProfilerExtensions());
+        $container->addCompilerPass(new BuildEntityDefinitionNamesCompilerPass());
         parent::build($container);
     }
 }

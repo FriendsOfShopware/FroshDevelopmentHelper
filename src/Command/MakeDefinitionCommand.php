@@ -7,6 +7,7 @@ use Frosh\DevelopmentHelper\Component\Generator\Definition\EntityConsoleQuestion
 use Frosh\DevelopmentHelper\Component\Generator\Definition\DefinitionGenerator;
 use Frosh\DevelopmentHelper\Component\Generator\Definition\EntityGenerator;
 use Frosh\DevelopmentHelper\Component\Generator\Definition\EntityLoader;
+use Frosh\DevelopmentHelper\Component\Generator\FixCodeStyle;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -41,12 +42,18 @@ class MakeDefinitionCommand extends Command
      */
     private $collectionGenerator;
 
+    /**
+     * @var FixCodeStyle
+     */
+    private $fixCodeStyle;
+
     public function __construct(
         EntityLoader $entityLoader,
         EntityConsoleQuestion $entityConsoleQuestion,
         DefinitionGenerator $definitionGenerator,
         EntityGenerator $entityGenerator,
-        CollectionGenerator $collectionGenerator
+        CollectionGenerator $collectionGenerator,
+        FixCodeStyle $fixCodeStyle
     ) {
         parent::__construct();
         $this->entityLoader = $entityLoader;
@@ -54,6 +61,7 @@ class MakeDefinitionCommand extends Command
         $this->definitionGenerator = $definitionGenerator;
         $this->entityGenerator = $entityGenerator;
         $this->collectionGenerator = $collectionGenerator;
+        $this->fixCodeStyle = $fixCodeStyle;
     }
 
     protected function configure(): void
@@ -72,5 +80,6 @@ class MakeDefinitionCommand extends Command
         $this->definitionGenerator->generate($result);
         $this->entityGenerator->generate($result);
         $this->collectionGenerator->generate($result);
+        $this->fixCodeStyle->fix($result);
     }
 }

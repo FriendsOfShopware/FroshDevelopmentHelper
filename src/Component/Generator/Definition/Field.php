@@ -28,6 +28,16 @@ class Field
      */
     private $propertyName;
 
+    /**
+     * @var string|null
+     */
+    private $storageName;
+
+    /**
+     * @var string|null
+     */
+    private $referenceClass;
+
     public function __construct(string $name, array $args = [], array $flags = [])
     {
         $this->name = $name;
@@ -48,12 +58,44 @@ class Field
 
         $ref = new \ReflectionClass($this->name);
         foreach ($ref->getConstructor()->getParameters() as $i => $parameter) {
-            if ($parameter->name === 'storageName') {
+            if ($parameter->name === 'propertyName') {
                 return $this->propertyName = $this->args[$i];
             }
         }
 
+        throw new \RuntimeException('Cannot find propertyName');
+    }
+
+    public function getStorageName(): string
+    {
+        if ($this->storageName) {
+            return $this->storageName;
+        }
+
+        $ref = new \ReflectionClass($this->name);
+        foreach ($ref->getConstructor()->getParameters() as $i => $parameter) {
+            if ($parameter->name === 'storageName') {
+                return $this->storageName = $this->args[$i];
+            }
+        }
+
         throw new \RuntimeException('Cannot find storageName');
+    }
+
+    public function getReferenceClass(): string
+    {
+        if ($this->referenceClass) {
+            return $this->referenceClass;
+        }
+
+        $ref = new \ReflectionClass($this->name);
+        foreach ($ref->getConstructor()->getParameters() as $i => $parameter) {
+            if ($parameter->name === 'referenceClass') {
+                return $this->referenceClass = $this->args[$i];
+            }
+        }
+
+        throw new \RuntimeException('Cannot find referenceClass');
     }
 
 

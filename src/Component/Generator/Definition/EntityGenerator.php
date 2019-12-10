@@ -35,8 +35,6 @@ class EntityGenerator
         $builder = new BuilderFactory();
         $nodeFinder = new NodeFinder();
 
-        $file = $loaderResult->folder . $loaderResult->entityName . 'Entity.php';
-
         $useHelper = new UseHelper();
 
         $namespace = $this->buildNewNamespace($loaderResult,  $useHelper);
@@ -52,10 +50,7 @@ class EntityGenerator
                 continue;
             }
 
-            $type = TypeMapping::mapToPhpType($field->name);
-            if ($field->isNullable()) {
-                $type .= '|null';
-            }
+            $type = TypeMapping::mapToPhpType($field, true);
 
             $class->stmts[] = $builder->property($field->getPropertyName())->makeProtected()->setDocComment('/** @var ' . $type . ' */')->getNode();
         }
@@ -66,7 +61,7 @@ class EntityGenerator
                 continue;
             }
 
-            $type = TypeMapping::mapToPhpType($field->name);
+            $type = TypeMapping::mapToPhpType($field);
 
             if ($field->isNullable()) {
                 $type = '?' . $type;
@@ -89,18 +84,11 @@ class EntityGenerator
             $method->stmts[] = new Return_($var);
 
             $class->stmts[] = $method;
-
-//            $type = TypeMapping::mapToPhpType($field->name);
-//            if (!in_array(Required::class, $field->flags, true)) {
-//                $type .= '|null';
-//            }
-//
-//            $class->stmts[] = $builder->property($field->args[1])->makeProtected()->setDocComment('/** @var ' . $type . ' */')->getNode();
         }
 
         $printer = new Standard();
 
-        file_put_contents($file, $printer->prettyPrintFile([$namespace]));
+        file_put_contents($loaderResult->getEntityFilePath(), $printer->prettyPrintFile([$namespace]));
     }
 
     private function buildNewNamespace(LoaderResult $loaderResult, UseHelper $useHelper): Namespace_
@@ -109,7 +97,7 @@ class EntityGenerator
 
         $namespace = new Namespace_(new Name($loaderResult->namespace));
 
-        $class = $factory->class($loaderResult->entityName . 'Entity')
+        $class = $factory->class($loaderResult->name . 'Entity')
             ->extend('Entity')
             ->addStmt($factory->useTrait('EntityIdTrait'));
 

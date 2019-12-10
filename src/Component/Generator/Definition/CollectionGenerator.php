@@ -34,15 +34,13 @@ class CollectionGenerator
 
         $builder = new BuilderFactory();
 
-        $file = $loaderResult->folder . $loaderResult->entityName . 'Collection.php';
-
-        if (file_exists($file)) {
+        if (file_exists($loaderResult->getCollectionFilePath())) {
             return;
         }
 
         $phpDoc = '/**
- * @method void              add(%className% $entity)
- * @method void              set(string $key, %className% $entity)
+ * @method void             add(%className% $entity)
+ * @method void             set(string $key, %className% $entity)
  * @method %className%[]    getIterator()
  * @method %className%[]    getElements()
  * @method %className%|null get(string $key)
@@ -56,38 +54,20 @@ class CollectionGenerator
             ->namespace($loaderResult->namespace)
             ->addStmt($builder->use(EntityCollection::class))
             ->addStmt(
-                $builder->class($loaderResult->entityName . 'Collection')
-                ->setDocComment(str_replace('%className%', $loaderResult->entityName . 'Entity', $phpDoc))
+                $builder->class($loaderResult->getCollectionClassName())
+                ->setDocComment(str_replace('%className%', $loaderResult->name . 'Entity', $phpDoc))
                 ->extend('EntityCollection')
                 ->addStmt(
                     $builder->method('getExpectedClass')
                         ->makePublic()
                         ->setReturnType('string')
-                        ->addStmt(new Return_($builder->classConstFetch($loaderResult->entityName . 'Entity', 'class')))
+                        ->addStmt(new Return_($builder->classConstFetch($loaderResult->name . 'Entity', 'class')))
                 )
             )
             ->getNode();
 
         $printer = new Standard();
 
-        file_put_contents($file, $printer->prettyPrintFile([$node]));
-    }
-
-    private function buildNewNamespace(LoaderResult $loaderResult, UseHelper $useHelper): Namespace_
-    {
-        $factory = new BuilderFactory();
-
-        $namespace = new Namespace_(new Name($loaderResult->namespace));
-
-        $class = $factory->class($loaderResult->entityName . 'Entity')
-            ->extend('Entity')
-            ->addStmt($factory->useTrait('EntityIdTrait'));
-
-        $namespace->stmts[] = $class->getNode();
-
-        $useHelper->addUse(EntityIdTrait::class);
-        $useHelper->addUse(Entity::class);
-
-        return $namespace;
+        file_put_contents($loaderResult->getCollectionFilePath(), $printer->prettyPrintFile([$node]));
     }
 }

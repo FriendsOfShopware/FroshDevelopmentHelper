@@ -34,7 +34,7 @@ class EntityLoader
         $entityFile = $dir . $entityName . 'Definition.php';
 
         $result = new LoaderResult();
-        $result->entityName = $entityName;
+        $result->name = $entityName;
         $result->namespace = $refClass->getNamespaceName() . '\\Content\\' . $entityName;
         $result->folder = $dir;
 
@@ -99,6 +99,9 @@ class EntityLoader
                         break;
                     case $arg->value instanceof Node\Scalar\LNumber:
                         $args[] = (int) $arg->value->value;
+                        break;
+                    case $arg->value instanceof Node\Expr\ClassConstFetch:
+                        $args[] = $arg->value->class . '::' . $arg->value->name;
                         break;
                     case $arg->value instanceof Node\Expr\ConstFetch:
                         $value = (string) $arg->value->name;
