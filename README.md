@@ -14,4 +14,5 @@ Successor plugin of FroshProfiler and FroshMailCatcher
 * Disable Annoying Storefront Error Handler
 * Disables Twig Cache
 * Twig Variables in Twig Tab
+* Generate definition from command line
 * **Coming soon more**
