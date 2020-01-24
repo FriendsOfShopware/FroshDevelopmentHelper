@@ -13,7 +13,7 @@ use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
-class MakeDefinitionCommand extends Command
+class MakeDefinition extends Command
 {
     public static $defaultName = 'frosh:make:definition';
 

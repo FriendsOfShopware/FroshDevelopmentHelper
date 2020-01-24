@@ -4,9 +4,16 @@
            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
            xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd">
 
-    <imports>
-        <import resource="services/twig.xml"/>
-        <import resource="services/subscriber.xml"/>
-        <import resource="services/entity_generator.xml"/>
-    </imports>
+    <services>
+        <defaults autowire="true" autoconfigure="true" public="false"/>
+        <prototype namespace="Frosh\DevelopmentHelper\" resource="../../*" exclude="../../Component/Profiler"/>
+
+        <service id="Frosh\DevelopmentHelper\Component\Generator\Definition\EntityConsoleQuestion">
+            <argument key="$entityDefinitions" type="string">%frosh_development_helper.names%</argument>
+        </service>
+
+        <service id="Frosh\DevelopmentHelper\Component\Twig\Extension\BlockCommentExtension">
+            <argument key="$kernelRootDir">%kernel.project_dir%</argument>
+        </service>
+    </services>
 </container>
