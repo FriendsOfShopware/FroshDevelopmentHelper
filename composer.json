@@ -14,11 +14,6 @@
             "Frosh\\DevelopmentHelper\\": "src/"
         }
     },
-    "require": {
-        "nikic/php-parser": "4.3.0",
-        "friendsofphp/php-cs-fixer": "^2.16",
-        "psy/psysh": "^0.10.4"
-    },
     "extra": {
         "shopware-plugin-class": "Frosh\\DevelopmentHelper\\FroshDevelopmentHelper",
         "copyright": "FriendsOfShopware",

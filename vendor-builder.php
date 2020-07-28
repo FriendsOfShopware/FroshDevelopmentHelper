@@ -7,7 +7,7 @@ if (getcwd() !== __DIR__) {
 exec('rm -rf vendor');
 
 $lock = json_decode(file_get_contents('../../../composer.lock'), true);
-$currentCompopserJson = json_decode(file_get_contents('composer.json'), true);
+$currentCompopserJson = json_decode(file_get_contents('deps.json'), true);
 
 $newComposerJson = ['require' => []];
 
