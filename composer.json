@@ -1,5 +1,6 @@
 {
     "name": "frosh/development-helper",
+    "version": "0.2.0",
     "description": "Development Helper",
     "type": "shopware-platform-plugin",
     "license": "MIT",
@@ -14,6 +15,9 @@
             "Frosh\\DevelopmentHelper\\": "src/"
         }
     },
+    "require": {
+        "shopware/core": "~6.2"
+    },
     "extra": {
         "shopware-plugin-class": "Frosh\\DevelopmentHelper\\FroshDevelopmentHelper",
         "copyright": "FriendsOfShopware",
@@ -24,6 +28,14 @@
         "description": {
             "de-DE": "Zeigt dir Blöcke, Template Variabeln an",
             "en-GB": "Zeigt dir Blöcke, Template Variabeln an"
+        },
+        "manufacturerLink": {
+            "de-DE": "https://github.com/FriendsOfShopware/FroshDevelopmentHelper",
+            "en-GB": "https://github.com/FriendsOfShopware/FroshDevelopmentHelper"
+        },
+        "supportLink": {
+            "de-DE": "https://github.com/FriendsOfShopware/FroshDevelopmentHelper/issues",
+            "en-GB": "https://github.com/FriendsOfShopware/FroshDevelopmentHelper/issues"
         }
     }
 }
