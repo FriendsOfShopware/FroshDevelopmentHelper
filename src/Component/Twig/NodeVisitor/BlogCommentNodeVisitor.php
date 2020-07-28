@@ -15,7 +15,8 @@ class BlogCommentNodeVisitor extends AbstractNodeVisitor
 {
     private const BLACKLIST_KEYS = [
         'head_meta_tags',
-        'layout_head_title'
+        'layout_head_title',
+        'page_product_detail_buy_form_action'
     ];
 
     /**
