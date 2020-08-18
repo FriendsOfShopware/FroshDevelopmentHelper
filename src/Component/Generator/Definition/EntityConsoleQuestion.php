@@ -151,12 +151,8 @@ class EntityConsoleQuestion
             $args[] = $answer;
         }
 
-        $isNullable = $io->confirm(sprintf(
-            'Is the <comment>%s</comment> property allowed to be null (nullable)?',
-            $fieldName
-        ));
 
-        return new Field($type, $args, $isNullable ? [] : [Required::class]);
+        return new Field($type, $args, QuestionHelper::handleFlags($io, $fieldName, $type, $args));
     }
 
     private function hasIdField(array $fieldCollection): bool
