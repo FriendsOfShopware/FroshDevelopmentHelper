@@ -7,6 +7,7 @@ use Shopware\Core\Framework\DataAbstractionLayer\Field\Flag\PrimaryKey;
 use Shopware\Core\Framework\DataAbstractionLayer\Field\Flag\Required;
 use Shopware\Core\Framework\DataAbstractionLayer\Field\IdField;
 use Shopware\Core\Framework\DataAbstractionLayer\Field\ManyToOneAssociationField;
+use Shopware\Core\Framework\DataAbstractionLayer\Field\OneToOneAssociationField;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Question\Question;
@@ -180,7 +181,7 @@ class EntityConsoleQuestion
     {
         /** @var Field $field */
         foreach ($fieldCollection as $field) {
-            if ($field->name === ManyToOneAssociationField::class) {
+            if ($field->name === ManyToOneAssociationField::class || $field->name === OneToOneAssociationField::class) {
                 $haveFkField = false;
                 $associationStorageName = $field->getStorageName();
 

@@ -25,6 +25,7 @@ use Shopware\Core\Framework\DataAbstractionLayer\Field\LongTextField;
 use Shopware\Core\Framework\DataAbstractionLayer\Field\LongTextWithHtmlField;
 use Shopware\Core\Framework\DataAbstractionLayer\Field\ManyToOneAssociationField;
 use Shopware\Core\Framework\DataAbstractionLayer\Field\ObjectField;
+use Shopware\Core\Framework\DataAbstractionLayer\Field\OneToOneAssociationField;
 use Shopware\Core\Framework\DataAbstractionLayer\Field\PasswordField;
 use Shopware\Core\Framework\DataAbstractionLayer\Field\PriceDefinitionField;
 use Shopware\Core\Framework\DataAbstractionLayer\Field\PriceField;
@@ -61,7 +62,6 @@ class TypeMapping
         ListField::class => 'array',
         LockedField::class => 'bool',
         LongTextField::class => 'string',
-        LongTextWithHtmlField::class => 'string',
         ObjectField::class => 'array',
         PriceDefinitionField::class => PriceDefinitionInterface::class,
         PriceField::class => PriceCollection::class,
@@ -77,7 +77,8 @@ class TypeMapping
         WhitelistRuleField::class => 'array',
         PasswordField::class => 'string',
 
-        ManyToOneAssociationField::class => 'associationField'
+        ManyToOneAssociationField::class => 'associationField',
+        OneToOneAssociationField::class => 'associationField',
     ];
 
     public static function getCompletionTypes(): array
