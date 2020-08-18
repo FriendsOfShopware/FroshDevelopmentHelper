@@ -2,7 +2,9 @@
 
 namespace Frosh\DevelopmentHelper\Component\Generator\Definition;
 
-class LoaderResult
+use Symfony\Component\Serializer\NameConverter\CamelCaseToSnakeCaseNameConverter;
+
+class DefinitionBuild
 {
     /**
      * @var Field[]
@@ -23,6 +25,11 @@ class LoaderResult
      * @var string
      */
     public $folder;
+
+    public function getDefinitionName(): string
+    {
+        return (new CamelCaseToSnakeCaseNameConverter())->normalize($this->name);
+    }
 
     public function getEntityClassName(): string
     {

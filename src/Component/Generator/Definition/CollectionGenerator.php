@@ -26,7 +26,7 @@ use Shopware\Core\Framework\Test\Api\ApiVersioning\fixtures\Entities\v1\BundleEn
 
 class CollectionGenerator
 {
-    public function generate(LoaderResult $loaderResult): void
+    public function generate(DefinitionBuild $loaderResult): void
     {
         if (!file_exists($loaderResult->folder) && !mkdir($concurrentDirectory = $loaderResult->folder, 0777, true) && !is_dir($concurrentDirectory)) {
             throw new \RuntimeException(sprintf('Directory "%s" was not created', $concurrentDirectory));

@@ -27,7 +27,7 @@ use Shopware\Core\Framework\DataAbstractionLayer\FieldCollection;
 
 class DefinitionGenerator
 {
-    public function generate(LoaderResult $loaderResult): void
+    public function generate(DefinitionBuild $loaderResult): void
     {
         if (!file_exists($loaderResult->folder) && !mkdir($concurrentDirectory = $loaderResult->folder, 0777, true) && !is_dir($concurrentDirectory)) {
             throw new \RuntimeException(sprintf('Directory "%s" was not created', $concurrentDirectory));
@@ -62,7 +62,7 @@ class DefinitionGenerator
         file_put_contents($loaderResult->getDefinitionFilePath(), $printer->prettyPrintFile([$namespace]));
     }
 
-    private function buildNewNamespace(LoaderResult $loaderResult, UseHelper $useHelper): Namespace_
+    private function buildNewNamespace(DefinitionBuild $loaderResult, UseHelper $useHelper): Namespace_
     {
         $builder = new BuilderFactory();
         $namespace = new Namespace_(new Name($loaderResult->namespace));
@@ -73,7 +73,7 @@ class DefinitionGenerator
         $entityName = new ClassMethod(new Identifier('getEntityName'));
         $entityName->returnType = new Name('string');
         $entityName->flags = Class_::MODIFIER_PUBLIC;
-        $entityName->stmts[] = new Return_(new String_($loaderResult->name));
+        $entityName->stmts[] = new Return_(new String_($loaderResult->getDefinitionName()));
 
         $defineFields = new ClassMethod(new Identifier('defineFields'));
         $defineFields->returnType = new Identifier('FieldCollection');

@@ -26,7 +26,7 @@ use Shopware\Core\Framework\DataAbstractionLayer\Field\IdField;
 
 class EntityGenerator
 {
-    public function generate(LoaderResult $loaderResult): void
+    public function generate(DefinitionBuild $loaderResult): void
     {
         if (!file_exists($loaderResult->folder) && !mkdir($concurrentDirectory = $loaderResult->folder, 0777, true) && !is_dir($concurrentDirectory)) {
             throw new \RuntimeException(sprintf('Directory "%s" was not created', $concurrentDirectory));
@@ -91,7 +91,7 @@ class EntityGenerator
         file_put_contents($loaderResult->getEntityFilePath(), $printer->prettyPrintFile([$namespace]));
     }
 
-    private function buildNewNamespace(LoaderResult $loaderResult, UseHelper $useHelper): Namespace_
+    private function buildNewNamespace(DefinitionBuild $loaderResult, UseHelper $useHelper): Namespace_
     {
         $factory = new BuilderFactory();
 

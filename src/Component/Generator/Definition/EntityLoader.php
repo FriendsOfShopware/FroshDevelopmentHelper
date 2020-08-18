@@ -25,7 +25,7 @@ class EntityLoader
         $this->kernel = $kernel;
     }
 
-    public function load(string $bundle, string $entityName): LoaderResult
+    public function load(string $bundle, string $entityName): DefinitionBuild
     {
         $bundle = $this->kernel->getBundle($bundle);
 
@@ -33,7 +33,7 @@ class EntityLoader
         $dir = pathinfo($refClass->getFileName(), PATHINFO_DIRNAME) . '/Content/' . $entityName . '/';
         $entityFile = $dir . $entityName . 'Definition.php';
 
-        $result = new LoaderResult();
+        $result = new DefinitionBuild();
         $result->name = $entityName;
         $result->namespace = $refClass->getNamespaceName() . '\\Content\\' . $entityName;
         $result->folder = $dir;
