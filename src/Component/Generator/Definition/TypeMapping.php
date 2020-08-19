@@ -4,6 +4,7 @@
 namespace Frosh\DevelopmentHelper\Component\Generator\Definition;
 
 use Frosh\DevelopmentHelper\Component\Generator\Struct\Definition;
+use Frosh\DevelopmentHelper\Component\Generator\Struct\Field;
 use Shopware\Core\Checkout\Cart\Price\Struct\PriceDefinitionInterface;
 use Shopware\Core\Framework\DataAbstractionLayer\Field\BlobField;
 use Shopware\Core\Framework\DataAbstractionLayer\Field\BoolField;

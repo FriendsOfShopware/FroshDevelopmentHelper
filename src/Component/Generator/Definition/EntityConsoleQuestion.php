@@ -3,6 +3,8 @@
 namespace Frosh\DevelopmentHelper\Component\Generator\Definition;
 
 use Frosh\DevelopmentHelper\Component\Generator\Struct\Definition;
+use Frosh\DevelopmentHelper\Component\Generator\Struct\Field;
+use Frosh\DevelopmentHelper\Component\Generator\Struct\Flag;
 use Shopware\Core\Framework\DataAbstractionLayer\Field\FkField;
 use Shopware\Core\Framework\DataAbstractionLayer\Field\Flag\PrimaryKey;
 use Shopware\Core\Framework\DataAbstractionLayer\Field\Flag\Required;
@@ -39,7 +41,7 @@ class EntityConsoleQuestion
     public function question(SymfonyStyle $io, Definition $definition): void
     {
         if (!$this->hasField($definition->fields, IdField::class)) {
-            $definition->fields[] = new Field(IdField::class, ['id', 'id'], [Required::class, PrimaryKey::class]);
+            $definition->fields[] = new Field(IdField::class, ['id', 'id'], [new Flag(Required::class), new Flag(PrimaryKey::class)]);
         }
 
         $currentFields = $this->getCurrentFields($definition->fields);
@@ -202,6 +204,10 @@ class EntityConsoleQuestion
 
                 /** @var Field $nField */
                 foreach ($fieldCollection as $nField) {
+                    if (!$nField->isStorageAware()) {
+                        continue;
+                    }
+
                     if ($nField->name !== $field->name && $nField->getStorageName() === $associationStorageName) {
                         $haveFkField = true;
                     }

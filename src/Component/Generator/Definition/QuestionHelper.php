@@ -3,6 +3,7 @@
 namespace Frosh\DevelopmentHelper\Component\Generator\Definition;
 
 use Frosh\DevelopmentHelper\Component\Generator\Definition\CustomFlags\Translateable;
+use Frosh\DevelopmentHelper\Component\Generator\Struct\Flag;
 use Shopware\Core\Framework\DataAbstractionLayer\Field\Flag\AllowHtml;
 use Shopware\Core\Framework\DataAbstractionLayer\Field\Flag\Required;
 use Shopware\Core\Framework\DataAbstractionLayer\Field\LongTextField;
@@ -26,17 +27,17 @@ class QuestionHelper
         ));
 
         if (!$isNullable) {
-            $flags[] = Required::class;
+            $flags[] = new Flag(Required::class);
         }
 
         if (in_array($type, self::HTML_RELEVANT_FIELDS, true)) {
             $allowHtml = $io->confirm(sprintf(
                 'Can <comment>%s</comment> contain html?',
                 $fieldName
-            ));
+            ), false);
 
             if ($allowHtml) {
-                $flags[] = AllowHtml::class;
+                $flags[] = new Flag(AllowHtml::class);
             }
         }
 
@@ -45,6 +46,6 @@ class QuestionHelper
 
     public static function handleTranslationQuestion(SymfonyStyle $io): bool
     {
-        return $io->confirm('Field can be translated?');
+        return $io->confirm('Field can be translated?', false);
     }
 }

@@ -3,6 +3,8 @@
 namespace Frosh\DevelopmentHelper\Component\Generator\Definition;
 
 use Frosh\DevelopmentHelper\Component\Generator\Struct\Definition;
+use Frosh\DevelopmentHelper\Component\Generator\Struct\Field;
+use Frosh\DevelopmentHelper\Component\Generator\Struct\Flag;
 use Frosh\DevelopmentHelper\Component\Generator\Struct\TranslationDefinition;
 use PhpParser\Node;
 use PhpParser\Node\Stmt\ClassMethod;
@@ -104,7 +106,7 @@ class EntityLoader
             $exprNew = null;
             if ($item->value instanceof Node\Expr\MethodCall) {
                 foreach ($item->value->args as $arg) {
-                    $flags[] = $this->getFQCN((string) $arg->value->class);
+                    $flags[] = new Flag($this->getFQCN((string) $arg->value->class), $this->parserArgumentsToPhp($arg->value->args));
                 }
                 $exprNew = $item->value->var;
             } else {
@@ -112,41 +114,47 @@ class EntityLoader
             }
 
             $className = $this->getFQCN((string) $exprNew->class);
-            $args = [];
 
-            /** @var Node\Arg $arg */
-            foreach ($exprNew->args as $arg) {
-                switch (true) {
-                    case $arg->value instanceof Node\Scalar\String_:
-                        $args[] = (string) $arg->value->value;
-                        break;
-                    case $arg->value instanceof Node\Scalar\LNumber:
-                        $args[] = (int) $arg->value->value;
-                        break;
-                    case $arg->value instanceof Node\Expr\ClassConstFetch:
-                        $args[] = $arg->value->class . '::' . $arg->value->name;
-                        break;
-                    case $arg->value instanceof Node\Expr\ConstFetch:
-                        $value = (string) $arg->value->name;
-                        if ($value === 'null') {
-                            $value = null;
-                        } elseif ($value === 'false') {
-                            $value = false;
-                        } elseif ($value === 'true') {
-                            $value = true;
-                        }
-
-                        $args[] = $value;
-                        break;
-                    default:
-                        throw new \RuntimeException('Type not supported: ' . get_class($arg->value));
-                }
-            }
-
-            $fields[] = new Field($className, $args, $flags);
+            $fields[] = new Field($className, $this->parserArgumentsToPhp($exprNew->args), $flags);
         }
 
         return $fields;
+    }
+
+    private function parserArgumentsToPhp($element): array
+    {
+        $args = [];
+
+        /** @var Node\Arg $arg */
+        foreach ($element as $arg) {
+            switch (true) {
+                case $arg->value instanceof Node\Scalar\String_:
+                    $args[] = (string) $arg->value->value;
+                    break;
+                case $arg->value instanceof Node\Scalar\LNumber:
+                    $args[] = (int) $arg->value->value;
+                    break;
+                case $arg->value instanceof Node\Expr\ClassConstFetch:
+                    $args[] = $this->getFQCN($arg->value->class) . '::' . $arg->value->name;
+                    break;
+                case $arg->value instanceof Node\Expr\ConstFetch:
+                    $value = (string) $arg->value->name;
+                    if ($value === 'null') {
+                        $value = null;
+                    } elseif ($value === 'false') {
+                        $value = false;
+                    } elseif ($value === 'true') {
+                        $value = true;
+                    }
+
+                    $args[] = $value;
+                    break;
+                default:
+                    throw new \RuntimeException('Type not supported: ' . get_class($arg->value));
+            }
+        }
+
+        return $args;
     }
 
     public function getFQCN(string $name): string

@@ -19,11 +19,14 @@ class FixCodeStyle
         $config->setRules([
             '@PSR2' => true,
             '@Symfony' => true,
+            'declare_strict_types' => true,
             'fully_qualified_strict_types' => true,
             'method_argument_space' => [
                 'on_multiline' => 'ensure_fully_multiline'
-            ]
+            ],
+            'ordered_class_elements' => true,
         ]);
+        $config->setRiskyAllowed(true);
 
         $resolver = new ConfigurationResolver(
             $config,
@@ -51,6 +54,6 @@ class FixCodeStyle
             $resolver->shouldStopOnViolation()
         );
 
-        $foo = $runner->fix();
+        $runner->fix();
     }
 }

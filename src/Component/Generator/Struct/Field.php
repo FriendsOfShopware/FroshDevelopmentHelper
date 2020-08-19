@@ -1,12 +1,12 @@
 <?php
 
-
-namespace Frosh\DevelopmentHelper\Component\Generator\Definition;
+namespace Frosh\DevelopmentHelper\Component\Generator\Struct;
 
 use Shopware\Core\Framework\DataAbstractionLayer\Field\CustomFields;
 use Shopware\Core\Framework\DataAbstractionLayer\Field\Flag\Required;
 use Shopware\Core\Framework\DataAbstractionLayer\Field\ManyToManyAssociationField;
 use Shopware\Core\Framework\DataAbstractionLayer\Field\OneToManyAssociationField;
+use Shopware\Core\Framework\DataAbstractionLayer\Field\StorageAware;
 use Shopware\Core\Framework\DataAbstractionLayer\Field\TranslationsAssociationField;
 
 class Field
@@ -22,7 +22,7 @@ class Field
     public $args;
 
     /**
-     * @var array
+     * @var Flag[]
      */
     public $flags;
 
@@ -56,7 +56,13 @@ class Field
 
     public function isNullable(): bool
     {
-        return !in_array(Required::class, $this->flags, true);
+        foreach ($this->flags as $flag) {
+            if ($flag->name === Required::class) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     public function getPropertyName(): string
@@ -103,6 +109,7 @@ class Field
                 return $this->storageName = $this->args[$i];
             }
         }
+
         throw new \RuntimeException('Cannot find storageName');
     }
 
@@ -126,5 +133,8 @@ class Field
         throw new \RuntimeException('Cannot find referenceClass');
     }
 
-
+    public function isStorageAware(): bool
+    {
+        return is_a($this->name, StorageAware::class, true);
+    }
 }

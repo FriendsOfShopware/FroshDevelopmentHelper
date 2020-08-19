@@ -3,6 +3,7 @@
 namespace Frosh\DevelopmentHelper\Component\Generator\Definition;
 
 use Frosh\DevelopmentHelper\Component\Generator\Struct\Definition;
+use Frosh\DevelopmentHelper\Component\Generator\Struct\Field;
 use Frosh\DevelopmentHelper\Component\Generator\Struct\TranslationDefinition;
 use Frosh\DevelopmentHelper\Component\Generator\UseHelper;
 use PhpParser\BuilderFactory;
@@ -145,40 +146,14 @@ class DefinitionGenerator
         foreach ($fieldCollection as $element) {
             $useHelper->addUse($element->name);
 
-            $args = [];
-
-            foreach ($element->args as $arg) {
-                switch (gettype($arg)) {
-                    case 'string':
-                        if (strpos($arg, '::class') !== false) {
-                            $args[] = new Arg(new Node\Expr\ClassConstFetch(new Name(substr('\\' . $arg, 0, -7)), new Identifier('class')));
-                        } else {
-                            $args[] = new Arg(new String_($arg));
-                        }
-
-                        break;
-                    case 'integer':
-                        $args[] = new Arg(new LNumber($arg));
-                        break;
-                    case 'NULL':
-                        $args[] = new Arg(new ConstFetch(new Name('null')));
-                        break;
-                    case 'boolean':
-                        $args[] = new Arg(new ConstFetch(new Name($arg ? 'true' : 'false')));
-                        break;
-                    default:
-                        throw new \RuntimeException('Invalid type ' . gettype($arg));
-                }
-            }
-
-            $field = new New_(new Name($useHelper->getShortName($element->name)), $args);
+            $field = new New_(new Name($useHelper->getShortName($element->name)), $this->buildArgsForParser($element->args));
 
             if (!empty($element->flags)) {
                 $args = [];
 
                 foreach ($element->flags as $flag) {
-                    $useHelper->addUse($flag);
-                    $args[] = new Arg(new New_(new Name($useHelper->getShortName($flag))));
+                    $useHelper->addUse($flag->name);
+                    $args[] = new Arg(new New_(new Name($useHelper->getShortName($flag->name)), $this->buildArgsForParser($flag->args)));
                 }
 
                 $field = new MethodCall($field, 'addFlags', $args);
@@ -188,5 +163,39 @@ class DefinitionGenerator
         }
 
         return $array;
+    }
+
+    private function buildArgsForParser(array $elementArgs): array
+    {
+        $args = [];
+
+        foreach ($elementArgs as $arg) {
+            switch (gettype($arg)) {
+                case 'string':
+                    if (strpos($arg, '::class') !== false) {
+                        $args[] = new Arg(new Node\Expr\ClassConstFetch(new Name('\\' . substr($arg, 0, -7)), new Identifier('class')));
+                    } elseif (strpos($arg, '::') !== false) {
+                        [$firstPart, $secondPart] = explode('::', $arg, 2);
+                        $args[] = new Arg(new Node\Expr\ClassConstFetch(new Name('\\' . $firstPart), new Identifier($secondPart)));
+                    } else {
+                        $args[] = new Arg(new String_($arg));
+                    }
+
+                    break;
+                case 'integer':
+                    $args[] = new Arg(new LNumber($arg));
+                    break;
+                case 'NULL':
+                    $args[] = new Arg(new ConstFetch(new Name('null')));
+                    break;
+                case 'boolean':
+                    $args[] = new Arg(new ConstFetch(new Name($arg ? 'true' : 'false')));
+                    break;
+                default:
+                    throw new \RuntimeException('Invalid type ' . gettype($arg));
+            }
+        }
+
+        return $args;
     }
 }

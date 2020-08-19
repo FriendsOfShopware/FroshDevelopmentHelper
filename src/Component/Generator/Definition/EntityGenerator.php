@@ -5,6 +5,7 @@ namespace Frosh\DevelopmentHelper\Component\Generator\Definition;
 
 
 use Frosh\DevelopmentHelper\Component\Generator\Struct\Definition;
+use Frosh\DevelopmentHelper\Component\Generator\Struct\Field;
 use Frosh\DevelopmentHelper\Component\Generator\Struct\TranslationDefinition;
 use Frosh\DevelopmentHelper\Component\Generator\UseHelper;
 use PhpParser\BuilderFactory;
@@ -20,7 +21,9 @@ use PhpParser\Node\Stmt\Expression;
 use PhpParser\Node\Stmt\Namespace_;
 use PhpParser\Node\Stmt\PropertyProperty;
 use PhpParser\Node\Stmt\Return_;
+use PhpParser\Node\Stmt\UseUse;
 use PhpParser\NodeFinder;
+use PhpParser\ParserFactory;
 use PhpParser\PrettyPrinter\Standard;
 use Shopware\Core\Framework\DataAbstractionLayer\Entity;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityIdTrait;
@@ -29,9 +32,9 @@ use Shopware\Core\Framework\DataAbstractionLayer\TranslationEntity;
 
 class EntityGenerator
 {
-    public function generate(Definition $loaderResult): void
+    public function generate(Definition $definition): void
     {
-        if (!file_exists($loaderResult->folder) && !mkdir($concurrentDirectory = $loaderResult->folder, 0777, true) && !is_dir($concurrentDirectory)) {
+        if (!file_exists($definition->folder) && !mkdir($concurrentDirectory = $definition->folder, 0777, true) && !is_dir($concurrentDirectory)) {
             throw new \RuntimeException(sprintf('Directory "%s" was not created', $concurrentDirectory));
         }
 
@@ -39,37 +42,55 @@ class EntityGenerator
         $nodeFinder = new NodeFinder();
         $useHelper = new UseHelper();
 
-        $namespace = $this->buildNewNamespace($loaderResult,  $useHelper);
+        if (file_exists($definition->getEntityFilePath())) {
+            $namespace = $this->buildNamespaceFromExistingFile($definition->getEntityFilePath(), $useHelper);
+        } else {
+            $namespace = $this->buildNewNamespace($definition, $useHelper);
+        }
 
         $namespace->stmts = array_merge($useHelper->getStms(), $namespace->stmts);
 
         /** @var Class_ $class */
         $class = $nodeFinder->findFirstInstanceOf([$namespace], Class_::class);
 
+        $classProperties = $nodeFinder->findInstanceOf([$class], PropertyProperty::class);
+        $classMethods = $nodeFinder->findInstanceOf([$class], ClassMethod::class);
+
         /** @var Field $field */
-        foreach ($loaderResult->fields as $field) {
+        foreach ($definition->fields as $field) {
             if ($field->name === IdField::class) {
                 continue;
             }
 
-            $type = TypeMapping::mapToPhpType($field, true, $loaderResult);
+            if ($this->hasProperty($classProperties, $field->getPropertyName())) {
+                continue;
+            }
+
+            $type = TypeMapping::mapToPhpType($field, true, $definition);
 
             $class->stmts[] = $builder->property($field->getPropertyName())->makeProtected()->setDocComment('/** @var ' . $type . ' */')->getNode();
         }
 
         /** @var Field $field */
-        foreach ($loaderResult->fields as $field) {
+        foreach ($definition->fields as $field) {
             if ($field->name === IdField::class) {
                 continue;
             }
 
-            $type = TypeMapping::mapToPhpType($field, false, $loaderResult);
+            $setterMethodName = 'set' . ucfirst($field->getPropertyName());
+            $getterMethodName = 'get' . ucfirst($field->getPropertyName());
+
+            if ($this->hasMethod($classMethods, $setterMethodName) || $this->hasMethod($classMethods, $getterMethodName)) {
+                continue;
+            }
+
+            $type = TypeMapping::mapToPhpType($field, false, $definition);
 
             if ($field->isNullable()) {
                 $type = '?' . $type;
             }
 
-            $method = new ClassMethod(new Identifier('set' . ucfirst($field->getPropertyName())));
+            $method = new ClassMethod(new Identifier($setterMethodName));
             $method->flags = Class_::MODIFIER_PUBLIC;
             $method->returnType = new Identifier('void');
             $method->params = [new Param(new Name('$value'), null, new Name($type))];
@@ -79,7 +100,7 @@ class EntityGenerator
 
             $class->stmts[] = $method;
 
-            $method = new ClassMethod(new Identifier('get' . ucfirst($field->getPropertyName())));
+            $method = new ClassMethod(new Identifier($getterMethodName));
             $method->flags = Class_::MODIFIER_PUBLIC;
             $method->returnType = new Identifier($type);
 
@@ -90,7 +111,7 @@ class EntityGenerator
 
         $printer = new Standard();
 
-        file_put_contents($loaderResult->getEntityFilePath(), $printer->prettyPrintFile([$namespace]));
+        file_put_contents($definition->getEntityFilePath(), $printer->prettyPrintFile([$namespace]));
     }
 
     private function buildNewNamespace(Definition $loaderResult, UseHelper $useHelper): Namespace_
@@ -142,5 +163,21 @@ class EntityGenerator
         }
 
         return false;
+    }
+
+    private function buildNamespaceFromExistingFile(string $entityFile, UseHelper $useHelper): Namespace_
+    {
+        $parser = (new ParserFactory())->create(ParserFactory::ONLY_PHP7);
+        $ast = $parser->parse(file_get_contents($entityFile));
+
+        $nodeFinder = new NodeFinder();
+
+        $useFlags = $nodeFinder->findInstanceOf($ast, UseUse::class);
+        /** @var UseUse $useFlag */
+        foreach ($useFlags as $useFlag) {
+            $useHelper->addUsage((string) $useFlag->name);
+        }
+
+        return $nodeFinder->findFirstInstanceOf($ast, Namespace_::class);
     }
 }
