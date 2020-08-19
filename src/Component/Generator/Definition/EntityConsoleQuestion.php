@@ -13,6 +13,7 @@ use Shopware\Core\Framework\DataAbstractionLayer\Field\TranslatedField;
 use Shopware\Core\Framework\DataAbstractionLayer\Field\TranslationsAssociationField;
 use Symfony\Component\Console\Question\Question;
 use Symfony\Component\Console\Style\SymfonyStyle;
+use Symfony\Component\Serializer\NameConverter\CamelCaseToSnakeCaseNameConverter;
 
 class EntityConsoleQuestion
 {
@@ -139,7 +140,7 @@ class EntityConsoleQuestion
             }
 
             if ($parameter->name === 'storageName' && $default === null) {
-                $default = $fieldName;
+                $default = (new CamelCaseToSnakeCaseNameConverter())->normalize($fieldName);
             }
             if (is_bool($default)) {
                 $default = $default ? 'true' : 'false';
