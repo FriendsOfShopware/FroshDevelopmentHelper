@@ -4,6 +4,8 @@
 namespace Frosh\DevelopmentHelper\Component\Generator\Definition;
 
 
+use Frosh\DevelopmentHelper\Component\Generator\Struct\Definition;
+use Frosh\DevelopmentHelper\Component\Generator\Struct\TranslationDefinition;
 use Frosh\DevelopmentHelper\Component\Generator\UseHelper;
 use PhpParser\BuilderFactory;
 use PhpParser\Node\Expr\Assign;
@@ -16,19 +18,18 @@ use PhpParser\Node\Stmt\Class_;
 use PhpParser\Node\Stmt\ClassMethod;
 use PhpParser\Node\Stmt\Expression;
 use PhpParser\Node\Stmt\Namespace_;
-use PhpParser\Node\Stmt\Property;
 use PhpParser\Node\Stmt\PropertyProperty;
 use PhpParser\Node\Stmt\Return_;
 use PhpParser\NodeFinder;
 use PhpParser\PrettyPrinter\Standard;
 use Shopware\Core\Framework\DataAbstractionLayer\Entity;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityIdTrait;
-use Shopware\Core\Framework\DataAbstractionLayer\Field\Flag\Required;
 use Shopware\Core\Framework\DataAbstractionLayer\Field\IdField;
+use Shopware\Core\Framework\DataAbstractionLayer\TranslationEntity;
 
 class EntityGenerator
 {
-    public function generate(DefinitionBuild $loaderResult): void
+    public function generate(Definition $loaderResult): void
     {
         if (!file_exists($loaderResult->folder) && !mkdir($concurrentDirectory = $loaderResult->folder, 0777, true) && !is_dir($concurrentDirectory)) {
             throw new \RuntimeException(sprintf('Directory "%s" was not created', $concurrentDirectory));
@@ -51,7 +52,7 @@ class EntityGenerator
                 continue;
             }
 
-            $type = TypeMapping::mapToPhpType($field, true);
+            $type = TypeMapping::mapToPhpType($field, true, $loaderResult);
 
             $class->stmts[] = $builder->property($field->getPropertyName())->makeProtected()->setDocComment('/** @var ' . $type . ' */')->getNode();
         }
@@ -62,7 +63,7 @@ class EntityGenerator
                 continue;
             }
 
-            $type = TypeMapping::mapToPhpType($field);
+            $type = TypeMapping::mapToPhpType($field, false, $loaderResult);
 
             if ($field->isNullable()) {
                 $type = '?' . $type;
@@ -92,20 +93,29 @@ class EntityGenerator
         file_put_contents($loaderResult->getEntityFilePath(), $printer->prettyPrintFile([$namespace]));
     }
 
-    private function buildNewNamespace(DefinitionBuild $loaderResult, UseHelper $useHelper): Namespace_
+    private function buildNewNamespace(Definition $loaderResult, UseHelper $useHelper): Namespace_
     {
         $factory = new BuilderFactory();
 
         $namespace = new Namespace_(new Name($loaderResult->namespace));
 
-        $class = $factory->class($loaderResult->name . 'Entity')
-            ->extend('Entity')
-            ->addStmt($factory->useTrait('EntityIdTrait'));
+        $class = $factory->class($loaderResult->name . 'Entity');
+
+        if ($loaderResult instanceof TranslationDefinition) {
+            $useHelper->addUse(TranslationEntity::class);
+            $class
+                ->extend('TranslationEntity')
+                ->addStmt($factory->useTrait('EntityIdTrait'));
+        } else {
+            $useHelper->addUse(Entity::class);
+            $class
+                ->extend('Entity')
+                ->addStmt($factory->useTrait('EntityIdTrait'));
+        }
 
         $namespace->stmts[] = $class->getNode();
 
         $useHelper->addUse(EntityIdTrait::class);
-        $useHelper->addUse(Entity::class);
 
         return $namespace;
     }

@@ -2,6 +2,8 @@
 
 namespace Frosh\DevelopmentHelper\Component\Generator\Definition;
 
+use Frosh\DevelopmentHelper\Component\Generator\Struct\Definition;
+use Frosh\DevelopmentHelper\Component\Generator\Struct\TranslationDefinition;
 use Frosh\DevelopmentHelper\Component\Generator\UseHelper;
 use PhpParser\BuilderFactory;
 use PhpParser\Node;
@@ -23,11 +25,12 @@ use PhpParser\NodeFinder;
 use PhpParser\ParserFactory;
 use PhpParser\PrettyPrinter\Standard;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityDefinition;
+use Shopware\Core\Framework\DataAbstractionLayer\EntityTranslationDefinition;
 use Shopware\Core\Framework\DataAbstractionLayer\FieldCollection;
 
 class DefinitionGenerator
 {
-    public function generate(DefinitionBuild $loaderResult): void
+    public function generate(Definition $loaderResult): void
     {
         if (!file_exists($loaderResult->folder) && !mkdir($concurrentDirectory = $loaderResult->folder, 0777, true) && !is_dir($concurrentDirectory)) {
             throw new \RuntimeException(sprintf('Directory "%s" was not created', $concurrentDirectory));
@@ -62,18 +65,25 @@ class DefinitionGenerator
         file_put_contents($loaderResult->getDefinitionFilePath(), $printer->prettyPrintFile([$namespace]));
     }
 
-    private function buildNewNamespace(DefinitionBuild $loaderResult, UseHelper $useHelper): Namespace_
+    private function buildNewNamespace(Definition $definition, UseHelper $useHelper): Namespace_
     {
         $builder = new BuilderFactory();
-        $namespace = new Namespace_(new Name($loaderResult->namespace));
+        $namespace = new Namespace_(new Name($definition->namespace));
 
-        $class = new Class_(new Identifier($loaderResult->getDefinitionClassName()));
-        $class->extends = new Name('EntityDefinition');
+        $class = new Class_(new Identifier($definition->getDefinitionClassName()));
+
+        if ($definition instanceof TranslationDefinition) {
+            $class->extends = new Name('EntityTranslationDefinition');
+            $useHelper->addUse(EntityTranslationDefinition::class);
+        } else {
+            $class->extends = new Name('EntityDefinition');
+            $useHelper->addUse(EntityDefinition::class);
+        }
 
         $entityName = new ClassMethod(new Identifier('getEntityName'));
         $entityName->returnType = new Name('string');
         $entityName->flags = Class_::MODIFIER_PUBLIC;
-        $entityName->stmts[] = new Return_(new String_($loaderResult->getDefinitionName()));
+        $entityName->stmts[] = new Return_(new String_($definition->getDefinitionName()));
 
         $defineFields = new ClassMethod(new Identifier('defineFields'));
         $defineFields->returnType = new Identifier('FieldCollection');
@@ -85,19 +95,26 @@ class DefinitionGenerator
         $class->stmts[] = $builder->method('getEntityClass')
             ->makePublic()
             ->setReturnType(new Name('string'))
-            ->addStmt(new Return_($builder->classConstFetch($loaderResult->getEntityClassName(), 'class')))
+            ->addStmt(new Return_($builder->classConstFetch($definition->getEntityClassName(), 'class')))
             ->getNode();
 
         $class->stmts[] = $builder->method('getCollectionClass')
             ->makePublic()
             ->setReturnType(new Name('string'))
-            ->addStmt(new Return_($builder->classConstFetch($loaderResult->getCollectionClassName(), 'class')))
+            ->addStmt(new Return_($builder->classConstFetch($definition->getCollectionClassName(), 'class')))
             ->getNode();
+
+        if ($definition instanceof TranslationDefinition) {
+            $class->stmts[] = $builder->method('getParentDefinitionClass')
+                ->makePublic()
+                ->setReturnType(new Name('string'))
+                ->addStmt(new Return_($builder->classConstFetch('\\' . $definition->parent->getDefinitionClass(), 'class')))
+                ->getNode();
+        }
 
         $namespace->stmts[] = $class;
 
         $useHelper->addUse(FieldCollection::class);
-        $useHelper->addUse(EntityDefinition::class);
 
         return $namespace;
     }

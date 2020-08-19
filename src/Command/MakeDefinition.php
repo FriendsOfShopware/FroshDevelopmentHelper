@@ -12,6 +12,7 @@ use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Console\Style\SymfonyStyle;
 
 class MakeDefinition extends Command
 {
@@ -72,13 +73,21 @@ class MakeDefinition extends Command
 
     public function execute(InputInterface $input, OutputInterface $output)
     {
-        $result = $this->entityLoader->load($input->getArgument('namespace'));
+        $io = new SymfonyStyle($input, $output);
+        $result = $this->entityLoader->load($input->getArgument('namespace'), $io);
 
-        $result->fields = $this->entityConsoleQuestion->question($input, $output, $result->fields);
+        $this->entityConsoleQuestion->question($io, $result);
 
         $this->definitionGenerator->generate($result);
         $this->entityGenerator->generate($result);
         $this->collectionGenerator->generate($result);
         $this->fixCodeStyle->fix($result);
+
+        if ($result->translation) {
+            $this->definitionGenerator->generate($result->translation);
+            $this->entityGenerator->generate($result->translation);
+            $this->collectionGenerator->generate($result->translation);
+            $this->fixCodeStyle->fix($result->translation);
+        }
     }
 }

@@ -1,10 +1,12 @@
 <?php
 
-namespace Frosh\DevelopmentHelper\Component\Generator\Definition;
+namespace Frosh\DevelopmentHelper\Component\Generator\Struct;
 
+use Frosh\DevelopmentHelper\Component\Generator\Definition\Field;
+use Shopware\Core\Framework\Struct\Struct;
 use Symfony\Component\Serializer\NameConverter\CamelCaseToSnakeCaseNameConverter;
 
-class DefinitionBuild
+class Definition extends Struct
 {
     /**
      * @var Field[]
@@ -26,6 +28,11 @@ class DefinitionBuild
      */
     public $folder;
 
+    /**
+     * @var Definition|null
+     */
+    public $translation;
+
     public function getDefinitionName(): string
     {
         return (new CamelCaseToSnakeCaseNameConverter())->normalize($this->name);
@@ -41,9 +48,19 @@ class DefinitionBuild
         return $this->name . 'Collection';
     }
 
+    public function getCollectionClass(): string
+    {
+        return $this->namespace . '\\' . $this->getCollectionClassName();
+    }
+
     public function getDefinitionClassName(): string
     {
         return $this->name . 'Definition';
+    }
+
+    public function getDefinitionClass(): string
+    {
+        return $this->namespace . '\\' . $this->getDefinitionClassName();
     }
 
     public function getEntityFilePath(): string

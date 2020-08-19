@@ -3,6 +3,7 @@
 
 namespace Frosh\DevelopmentHelper\Component\Generator\Definition;
 
+use Frosh\DevelopmentHelper\Component\Generator\Struct\Definition;
 use Shopware\Core\Checkout\Cart\Price\Struct\PriceDefinitionInterface;
 use Shopware\Core\Framework\DataAbstractionLayer\Field\BlobField;
 use Shopware\Core\Framework\DataAbstractionLayer\Field\BoolField;
@@ -36,6 +37,7 @@ use Shopware\Core\Framework\DataAbstractionLayer\Field\RemoteAddressField;
 use Shopware\Core\Framework\DataAbstractionLayer\Field\StateMachineStateField;
 use Shopware\Core\Framework\DataAbstractionLayer\Field\StringField;
 use Shopware\Core\Framework\DataAbstractionLayer\Field\TranslatedField;
+use Shopware\Core\Framework\DataAbstractionLayer\Field\TranslationsAssociationField;
 use Shopware\Core\Framework\DataAbstractionLayer\Field\TreeBreadcrumbField;
 use Shopware\Core\Framework\DataAbstractionLayer\Field\TreeLevelField;
 use Shopware\Core\Framework\DataAbstractionLayer\Field\TreePathField;
@@ -82,6 +84,7 @@ class TypeMapping
         PasswordField::class => 'string',
         NumberRangeField::class => 'string',
         ManyToManyIdField::class => 'array',
+        TranslationsAssociationField::class => 'translationCollection',
 
         ManyToOneAssociationField::class => 'associationField',
         OneToOneAssociationField::class => 'associationField',
@@ -99,7 +102,7 @@ class TypeMapping
         return $types;
     }
 
-    public static function mapToPhpType(Field $field, bool $respectNull = false): string
+    public static function mapToPhpType(Field $field, bool $respectNull, Definition $definition): string
     {
         $type = self::TYPES[$field->name] ?? null;
 
@@ -111,11 +114,29 @@ class TypeMapping
             }
         }
 
+        if ($type === 'translationCollection') {
+            return '\\' . $definition->translation->getCollectionClass();
+        }
+
         if ($respectNull && $field->isNullable()) {
             $type .= '|null';
         }
 
+        if ($field->name === TranslatedField::class) {
+            return self::getTranslatedType($field, $respectNull, $definition);
+        }
 
         return $type;
+    }
+
+    private static function getTranslatedType(Field $field, bool $respectNull, Definition $definition): string
+    {
+        foreach ($definition->translation->fields as $translatedField) {
+            if ($translatedField->getPropertyName() === $field->getPropertyName()) {
+                return self::mapToPhpType($translatedField, $respectNull, $definition);
+            }
+        }
+
+        throw new \RuntimeException(sprintf('Field %s does not exists in translation', $field->getPropertyName()));
     }
 }

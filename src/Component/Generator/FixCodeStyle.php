@@ -2,7 +2,7 @@
 
 namespace Frosh\DevelopmentHelper\Component\Generator;
 
-use Frosh\DevelopmentHelper\Component\Generator\Definition\DefinitionBuild;
+use Frosh\DevelopmentHelper\Component\Generator\Struct\Definition;
 use PhpCsFixer\Config;
 use PhpCsFixer\Console\ConfigurationResolver;
 use PhpCsFixer\Error\ErrorsManager;
@@ -13,7 +13,7 @@ use Symfony\Component\Finder\Finder;
 
 class FixCodeStyle
 {
-    public function fix(DefinitionBuild $loaderResult): void
+    public function fix(Definition $loaderResult): void
     {
         $config = new Config();
         $config->setRules([

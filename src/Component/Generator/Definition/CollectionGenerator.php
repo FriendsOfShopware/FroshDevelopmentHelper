@@ -2,31 +2,15 @@
 
 namespace Frosh\DevelopmentHelper\Component\Generator\Definition;
 
-use Frosh\DevelopmentHelper\Component\Generator\UseHelper;
+use Frosh\DevelopmentHelper\Component\Generator\Struct\Definition;
 use PhpParser\BuilderFactory;
-use PhpParser\Node\Expr\Assign;
-use PhpParser\Node\Expr\PropertyFetch;
-use PhpParser\Node\Expr\Variable;
-use PhpParser\Node\Identifier;
-use PhpParser\Node\Name;
-use PhpParser\Node\Param;
-use PhpParser\Node\Stmt\Class_;
-use PhpParser\Node\Stmt\ClassMethod;
-use PhpParser\Node\Stmt\Expression;
-use PhpParser\Node\Stmt\Namespace_;
 use PhpParser\Node\Stmt\Return_;
-use PhpParser\NodeFinder;
 use PhpParser\PrettyPrinter\Standard;
-use Shopware\Core\Framework\DataAbstractionLayer\Entity;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityCollection;
-use Shopware\Core\Framework\DataAbstractionLayer\EntityIdTrait;
-use Shopware\Core\Framework\DataAbstractionLayer\Field\Flag\Required;
-use Shopware\Core\Framework\DataAbstractionLayer\Field\IdField;
-use Shopware\Core\Framework\Test\Api\ApiVersioning\fixtures\Entities\v1\BundleEntity;
 
 class CollectionGenerator
 {
-    public function generate(DefinitionBuild $loaderResult): void
+    public function generate(Definition $loaderResult): void
     {
         if (!file_exists($loaderResult->folder) && !mkdir($concurrentDirectory = $loaderResult->folder, 0777, true) && !is_dir($concurrentDirectory)) {
             throw new \RuntimeException(sprintf('Directory "%s" was not created', $concurrentDirectory));

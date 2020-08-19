@@ -2,10 +2,14 @@
 
 namespace Frosh\DevelopmentHelper\Component\Generator\Definition;
 
+use Frosh\DevelopmentHelper\Component\Generator\Struct\Definition;
+use Frosh\DevelopmentHelper\Component\Generator\Struct\TranslationDefinition;
 use PhpParser\Node;
 use PhpParser\Node\Stmt\ClassMethod;
 use PhpParser\NodeFinder;
 use PhpParser\ParserFactory;
+use Shopware\Core\Framework\DataAbstractionLayer\DefinitionInstanceRegistry;
+use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\Filesystem\Filesystem;
 
 class EntityLoader
@@ -14,20 +18,44 @@ class EntityLoader
      * @var Node\Stmt\Use_[]
      */
     private $useFlags;
+    /**
+     * @var DefinitionInstanceRegistry
+     */
+    private $instanceRegistry;
 
-    public function load(string $class): DefinitionBuild
+    public function __construct(DefinitionInstanceRegistry $instanceRegistry)
     {
-        $result = new DefinitionBuild();
+        $this->instanceRegistry = $instanceRegistry;
+    }
+
+    public function load(string $class, SymfonyStyle $io): Definition
+    {
+        $result = new Definition();
         $result->name = $this->normalizeName($class);
         $result->namespace = $this->normalizeNamespace($class);
         $result->fields = [];
 
-        if (class_exists($class)) {
-            $refClass = new \ReflectionClass($class);
+        if (class_exists($result->getDefinitionClass())) {
+            $refClass = new \ReflectionClass($result->getDefinitionClass());
             $folder = pathinfo($refClass->getFileName(), PATHINFO_DIRNAME);
 
             $result->folder = $folder . '/';
             $result->fields = $this->parseFile($refClass->getFileName());
+
+            $translationDefinition = $result->getDefinitionName() . '_translation';
+
+            // Find by dal registration
+            if ($this->instanceRegistry->has($translationDefinition)) {
+                $result->translation = TranslationDefinition::createFrom($this->load($this->instanceRegistry->getRepository($translationDefinition)->getDefinition()->getClass(), $io));
+                $result->translation->parent = $result;
+            } else {
+                // Find by default name / folder
+                $translation = $this->createDefaultTranslation($result);
+                if (class_exists($translation->getDefinitionClass())) {
+                    $result->translation = TranslationDefinition::createFrom($this->load($translation->getDefinitionClass(), $io));
+                    $result->translation->parent = $result;
+                }
+            }
 
             return $result;
         }
@@ -35,6 +63,10 @@ class EntityLoader
         $result->folder = $this->getNewEntityFolder($class);
 
         (new Filesystem())->mkdir($result->folder);
+
+        if ($io->confirm('This entity will need translations?')) {
+            $result->translation = $this->createDefaultTranslation($result);
+        }
 
         return $result;
     }
@@ -160,21 +192,33 @@ class EntityLoader
         $namespaceSplit = explode('\\', $namespace);
         unset($namespaceSplit[count($namespaceSplit)  -1 ]);
         $namespaceCount = count($namespaceSplit);
-        $suffix = '';
+        $suffix = [];
 
         for ($i = 0; $i < $namespaceCount; $i++) {
             $loopNamespace = implode('\\', $namespaceSplit) . '\\';
 
             if (isset($prefixes[$loopNamespace])) {
-                return $prefixes[$loopNamespace][0] . $suffix;
+                return rtrim($prefixes[$loopNamespace][0] . implode('/', array_reverse($suffix)), '/') . '/';
             }
 
             $index = count($namespaceSplit)  -1;
-            $suffix .= $namespaceSplit[$index] . '/';
+            $suffix[] = $namespaceSplit[$index];
 
             unset($namespaceSplit[$index]);
         }
 
         throw new \RuntimeException(sprintf('Namespace "%s" doees not fit in all known namespaces', $namespace));
+    }
+
+    private function createDefaultTranslation(Definition $result): TranslationDefinition
+    {
+        $translation = new TranslationDefinition();
+        $translation->name = $result->name . 'Translation';
+        $translation->folder = $result->folder . 'Aggregate/' . $result->name . 'Translation/';
+        $translation->namespace = $result->namespace . '\\Aggregate\\' . $result->name . 'Translation';
+        $translation->fields = [];
+        $translation->parent = $result;
+
+        return $translation;
     }
 }

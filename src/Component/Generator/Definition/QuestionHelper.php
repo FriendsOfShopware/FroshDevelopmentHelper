@@ -2,6 +2,7 @@
 
 namespace Frosh\DevelopmentHelper\Component\Generator\Definition;
 
+use Frosh\DevelopmentHelper\Component\Generator\Definition\CustomFlags\Translateable;
 use Shopware\Core\Framework\DataAbstractionLayer\Field\Flag\AllowHtml;
 use Shopware\Core\Framework\DataAbstractionLayer\Field\Flag\Required;
 use Shopware\Core\Framework\DataAbstractionLayer\Field\LongTextField;
@@ -40,5 +41,10 @@ class QuestionHelper
         }
 
         return $flags;
+    }
+
+    public static function handleTranslationQuestion(SymfonyStyle $io): bool
+    {
+        return $io->confirm('Field can be translated?');
     }
 }

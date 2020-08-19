@@ -3,11 +3,11 @@
 
 namespace Frosh\DevelopmentHelper\Component\Generator\Definition;
 
-
 use Shopware\Core\Framework\DataAbstractionLayer\Field\CustomFields;
 use Shopware\Core\Framework\DataAbstractionLayer\Field\Flag\Required;
 use Shopware\Core\Framework\DataAbstractionLayer\Field\ManyToManyAssociationField;
 use Shopware\Core\Framework\DataAbstractionLayer\Field\OneToManyAssociationField;
+use Shopware\Core\Framework\DataAbstractionLayer\Field\TranslationsAssociationField;
 
 class Field
 {
@@ -41,11 +41,17 @@ class Field
      */
     private $referenceClass;
 
-    public function __construct(string $name, array $args = [], array $flags = [])
+    /**
+     * @var bool
+     */
+    public $translateable;
+
+    public function __construct(string $name, array $args = [], array $flags = [], bool $translateable = false)
     {
         $this->name = $name;
         $this->args = $args;
         $this->flags = $flags;
+        $this->translateable = $translateable;
     }
 
     public function isNullable(): bool
@@ -61,6 +67,10 @@ class Field
 
         if ($this->name === CustomFields::class) {
             return 'customFields';
+        }
+
+        if ($this->name === TranslationsAssociationField::class) {
+            return 'translations';
         }
 
         $ref = new \ReflectionClass($this->name);
@@ -112,8 +122,6 @@ class Field
                 return $this->referenceClass = $this->args[$i];
             }
         }
-
-        dd($this);
 
         throw new \RuntimeException('Cannot find referenceClass');
     }

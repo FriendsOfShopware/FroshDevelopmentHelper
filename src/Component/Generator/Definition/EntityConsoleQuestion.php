@@ -2,14 +2,15 @@
 
 namespace Frosh\DevelopmentHelper\Component\Generator\Definition;
 
+use Frosh\DevelopmentHelper\Component\Generator\Struct\Definition;
 use Shopware\Core\Framework\DataAbstractionLayer\Field\FkField;
 use Shopware\Core\Framework\DataAbstractionLayer\Field\Flag\PrimaryKey;
 use Shopware\Core\Framework\DataAbstractionLayer\Field\Flag\Required;
 use Shopware\Core\Framework\DataAbstractionLayer\Field\IdField;
 use Shopware\Core\Framework\DataAbstractionLayer\Field\ManyToOneAssociationField;
 use Shopware\Core\Framework\DataAbstractionLayer\Field\OneToOneAssociationField;
-use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Output\OutputInterface;
+use Shopware\Core\Framework\DataAbstractionLayer\Field\TranslatedField;
+use Shopware\Core\Framework\DataAbstractionLayer\Field\TranslationsAssociationField;
 use Symfony\Component\Console\Question\Question;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
@@ -34,32 +35,45 @@ class EntityConsoleQuestion
     /**
      * @param Field[] $fieldCollection
      */
-    public function question(InputInterface $input, OutputInterface $output, array $fieldCollection): array
+    public function question(SymfonyStyle $io, Definition $definition): void
     {
-        if (!$this->hasIdField($fieldCollection)) {
-            $fieldCollection[] = new Field(IdField::class, ['id', 'id'], [Required::class, PrimaryKey::class]);
+        if (!$this->hasField($definition->fields, IdField::class)) {
+            $definition->fields[] = new Field(IdField::class, ['id', 'id'], [Required::class, PrimaryKey::class]);
         }
 
-        $currentFields = $this->getCurrentFields($fieldCollection);
-        $io = new SymfonyStyle($input, $output);
+        $currentFields = $this->getCurrentFields($definition->fields);
 
         while (true) {
-            $field = $this->askForNextField($io, $currentFields);
+            $field = $this->askForNextField($io, $currentFields, $definition);
 
             if ($field === null) {
                 break;
             }
 
             $currentFields[] = $field->getPropertyName();
-            $fieldCollection[] = $field;
+
+            if ($field->translateable) {
+                $definition->fields[] = new Field(TranslatedField::class, [$field->getPropertyName()]);
+                $definition->translation->fields[] = $field;
+            } else {
+                $definition->fields[] = $field;
+            }
         }
 
-        $fieldCollection = $this->addMissingFkFields($fieldCollection);
+        $definition->fields = $this->addMissingFkFields($definition->fields);
 
-        return $fieldCollection;
+        if ($definition->translation && !$this->hasField($definition->fields, TranslationsAssociationField::class)) {
+            $definition->fields[] = new Field(
+                TranslationsAssociationField::class,
+                [
+                    $definition->translation->getDefinitionClass() . '::class',
+                    $definition->getDefinitionName() . '_id'
+                ]
+            );
+        }
     }
 
-    private function askForNextField(SymfonyStyle $io, array $currentFields): ?Field
+    private function askForNextField(SymfonyStyle $io, array $currentFields, Definition $definition): ?Field
     {
         $fieldName = $io->ask('New property name (press <return> to stop adding fields)', null, function ($name) use ($currentFields) {
             // allow it to be empty
@@ -151,14 +165,18 @@ class EntityConsoleQuestion
             $args[] = $answer;
         }
 
-
-        return new Field($type, $args, QuestionHelper::handleFlags($io, $fieldName, $type, $args));
+        return new Field(
+            $type,
+            $args,
+            QuestionHelper::handleFlags($io, $fieldName, $type, $args),
+            $definition->translation !== null && QuestionHelper::handleTranslationQuestion($io)
+        );
     }
 
-    private function hasIdField(array $fieldCollection): bool
+    private function hasField(array $fieldCollection, string $field): bool
     {
         foreach ($fieldCollection as $element) {
-            if ($element->name === IdField::class) {
+            if ($element->name === $field) {
                 return true;
             }
         }
