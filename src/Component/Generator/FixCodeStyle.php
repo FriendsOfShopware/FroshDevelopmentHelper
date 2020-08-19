@@ -34,6 +34,8 @@ class FixCodeStyle
 
         $finder = new Finder();
         $finder = $finder->in($loaderResult->folder)
+            ->name('*' . $loaderResult->name . '*')
+            ->depth(0)
             ->files();
 
         $runner = new Runner(

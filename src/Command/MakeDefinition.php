@@ -67,13 +67,12 @@ class MakeDefinition extends Command
     protected function configure(): void
     {
         $this->setDescription('Generates an entity')
-            ->addArgument('plugin', InputArgument::REQUIRED, 'Plugin')
-            ->addArgument('entityName', InputArgument::REQUIRED, 'EntityName');
+            ->addArgument('namespace', InputArgument::REQUIRED, 'Namespace (FroshTest\\Content\\Store)');
     }
 
     public function execute(InputInterface $input, OutputInterface $output)
     {
-        $result = $this->entityLoader->load($input->getArgument('plugin'), $input->getArgument('entityName'));
+        $result = $this->entityLoader->load($input->getArgument('namespace'));
 
         $result->fields = $this->entityConsoleQuestion->question($input, $output, $result->fields);
 

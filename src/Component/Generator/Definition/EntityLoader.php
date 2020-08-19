@@ -6,45 +6,36 @@ use PhpParser\Node;
 use PhpParser\Node\Stmt\ClassMethod;
 use PhpParser\NodeFinder;
 use PhpParser\ParserFactory;
-use Symfony\Component\HttpKernel\KernelInterface;
+use Symfony\Component\Filesystem\Filesystem;
 
 class EntityLoader
 {
-    /**
-     * @var KernelInterface
-     */
-    private $kernel;
-
     /**
      * @var Node\Stmt\Use_[]
      */
     private $useFlags;
 
-    public function __construct(KernelInterface $kernel)
+    public function load(string $class): DefinitionBuild
     {
-        $this->kernel = $kernel;
-    }
-
-    public function load(string $bundle, string $entityName): DefinitionBuild
-    {
-        $bundle = $this->kernel->getBundle($bundle);
-
-        $refClass = new \ReflectionClass(get_class($bundle));
-        $dir = pathinfo($refClass->getFileName(), PATHINFO_DIRNAME) . '/Content/' . $entityName . '/';
-        $entityFile = $dir . $entityName . 'Definition.php';
-
         $result = new DefinitionBuild();
-        $result->name = $entityName;
-        $result->namespace = $refClass->getNamespaceName() . '\\Content\\' . $entityName;
-        $result->folder = $dir;
+        $result->name = $this->normalizeName($class);
+        $result->namespace = $this->normalizeNamespace($class);
+        $result->fields = [];
 
-        if (!file_exists($entityFile)) {
-            $result->fields = [];
+        if (class_exists($class)) {
+            $refClass = new \ReflectionClass($class);
+            $folder = pathinfo($refClass->getFileName(), PATHINFO_DIRNAME);
+
+            $result->folder = $folder . '/';
+            $result->fields = $this->parseFile($refClass->getFileName());
 
             return $result;
         }
 
-        $result->fields = $this->parseFile($entityFile);
+        $result->folder = $this->getNewEntityFolder($class);
+
+        (new Filesystem())->mkdir($result->folder);
+
         return $result;
     }
 
@@ -138,5 +129,52 @@ class EntityLoader
         }
 
         return $name;
+    }
+
+    private function normalizeNamespace(string $class): string
+    {
+        $splitt = explode('\\', $class);
+        unset($splitt[count($splitt) - 1]);
+
+        $class = implode('\\', $splitt);
+
+        if ($class[0] === '\\') {
+            $class = substr($class, 1);
+        }
+
+        return $class;
+    }
+
+    private function normalizeName(string $class): string
+    {
+        $splitt = explode('\\', $class);
+        $name = $splitt[count($splitt) - 1];
+        return str_replace('Definition', '', $name);
+    }
+
+    private function getNewEntityFolder(string $namespace): string
+    {
+        global $classLoader;
+        $prefixes = $classLoader->getPrefixesPsr4();
+
+        $namespaceSplit = explode('\\', $namespace);
+        unset($namespaceSplit[count($namespaceSplit)  -1 ]);
+        $namespaceCount = count($namespaceSplit);
+        $suffix = '';
+
+        for ($i = 0; $i < $namespaceCount; $i++) {
+            $loopNamespace = implode('\\', $namespaceSplit) . '\\';
+
+            if (isset($prefixes[$loopNamespace])) {
+                return $prefixes[$loopNamespace][0] . $suffix;
+            }
+
+            $index = count($namespaceSplit)  -1;
+            $suffix .= $namespaceSplit[$index] . '/';
+
+            unset($namespaceSplit[$index]);
+        }
+
+        throw new \RuntimeException(sprintf('Namespace "%s" doees not fit in all known namespaces', $namespace));
     }
 }

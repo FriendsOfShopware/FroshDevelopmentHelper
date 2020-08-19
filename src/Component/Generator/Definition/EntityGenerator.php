@@ -16,6 +16,8 @@ use PhpParser\Node\Stmt\Class_;
 use PhpParser\Node\Stmt\ClassMethod;
 use PhpParser\Node\Stmt\Expression;
 use PhpParser\Node\Stmt\Namespace_;
+use PhpParser\Node\Stmt\Property;
+use PhpParser\Node\Stmt\PropertyProperty;
 use PhpParser\Node\Stmt\Return_;
 use PhpParser\NodeFinder;
 use PhpParser\PrettyPrinter\Standard;
@@ -34,7 +36,6 @@ class EntityGenerator
 
         $builder = new BuilderFactory();
         $nodeFinder = new NodeFinder();
-
         $useHelper = new UseHelper();
 
         $namespace = $this->buildNewNamespace($loaderResult,  $useHelper);
@@ -107,5 +108,29 @@ class EntityGenerator
         $useHelper->addUse(Entity::class);
 
         return $namespace;
+    }
+
+    private function hasProperty(array $properties, string $name): bool
+    {
+        /** @var PropertyProperty $property */
+        foreach ($properties as $property) {
+            if ((string) $property->name === $name) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private function hasMethod(array $methods, string $name): bool
+    {
+        /** @var ClassMethod $method */
+        foreach ($methods as $method) {
+            if ((string) $method->name === $name) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

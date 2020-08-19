@@ -23,8 +23,11 @@ use Shopware\Core\Framework\DataAbstractionLayer\Field\ListField;
 use Shopware\Core\Framework\DataAbstractionLayer\Field\LockedField;
 use Shopware\Core\Framework\DataAbstractionLayer\Field\LongTextField;
 use Shopware\Core\Framework\DataAbstractionLayer\Field\LongTextWithHtmlField;
+use Shopware\Core\Framework\DataAbstractionLayer\Field\ManyToManyAssociationField;
+use Shopware\Core\Framework\DataAbstractionLayer\Field\ManyToManyIdField;
 use Shopware\Core\Framework\DataAbstractionLayer\Field\ManyToOneAssociationField;
 use Shopware\Core\Framework\DataAbstractionLayer\Field\ObjectField;
+use Shopware\Core\Framework\DataAbstractionLayer\Field\OneToManyAssociationField;
 use Shopware\Core\Framework\DataAbstractionLayer\Field\OneToOneAssociationField;
 use Shopware\Core\Framework\DataAbstractionLayer\Field\PasswordField;
 use Shopware\Core\Framework\DataAbstractionLayer\Field\PriceDefinitionField;
@@ -40,6 +43,7 @@ use Shopware\Core\Framework\DataAbstractionLayer\Field\UpdatedAtField;
 use Shopware\Core\Framework\DataAbstractionLayer\Field\VersionField;
 use Shopware\Core\Framework\DataAbstractionLayer\Field\WhitelistRuleField;
 use Shopware\Core\Framework\DataAbstractionLayer\Pricing\PriceCollection;
+use Shopware\Core\System\NumberRange\DataAbstractionLayer\NumberRangeField;
 
 class TypeMapping
 {
@@ -76,9 +80,13 @@ class TypeMapping
         VersionField::class => 'string',
         WhitelistRuleField::class => 'array',
         PasswordField::class => 'string',
+        NumberRangeField::class => 'string',
+        ManyToManyIdField::class => 'array',
 
         ManyToOneAssociationField::class => 'associationField',
         OneToOneAssociationField::class => 'associationField',
+        OneToManyAssociationField::class => 'associationField',
+        ManyToManyAssociationField::class => 'associationField',
     ];
 
     public static function getCompletionTypes(): array
@@ -96,12 +104,17 @@ class TypeMapping
         $type = self::TYPES[$field->name] ?? null;
 
         if ($type === 'associationField') {
-            $type = '\\' . substr($field->getReferenceClass(), 0, -7);
+            $type = substr($field->getReferenceClass(), 0, -7);
+
+            if (strpos($type, '\\') !== false) {
+                $type = '\\' . $type;
+            }
         }
 
         if ($respectNull && $field->isNullable()) {
             $type .= '|null';
         }
+
 
         return $type;
     }
