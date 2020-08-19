@@ -4,10 +4,17 @@ namespace Frosh\DevelopmentHelper\Component\Generator\Definition;
 
 use Shopware\Core\Framework\DataAbstractionLayer\Field\Flag\AllowHtml;
 use Shopware\Core\Framework\DataAbstractionLayer\Field\Flag\Required;
+use Shopware\Core\Framework\DataAbstractionLayer\Field\LongTextField;
+use Shopware\Core\Framework\DataAbstractionLayer\Field\StringField;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
 class QuestionHelper
 {
+    private const HTML_RELEVANT_FIELDS = [
+        StringField::class,
+        LongTextField::class
+    ];
+
     public static function handleFlags(SymfonyStyle $io, string $fieldName, string $type, array $args): array
     {
         $flags = [];
@@ -21,13 +28,15 @@ class QuestionHelper
             $flags[] = Required::class;
         }
 
-        $allowHtml = $io->confirm(sprintf(
-            'Can <comment>%s</comment> contain html?',
-            $fieldName
-        ));
+        if (in_array($type, self::HTML_RELEVANT_FIELDS, true)) {
+            $allowHtml = $io->confirm(sprintf(
+                'Can <comment>%s</comment> contain html?',
+                $fieldName
+            ));
 
-        if ($allowHtml) {
-            $flags[] = AllowHtml::class;
+            if ($allowHtml) {
+                $flags[] = AllowHtml::class;
+            }
         }
 
         return $flags;
