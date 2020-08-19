@@ -30,18 +30,18 @@ use Shopware\Core\Framework\DataAbstractionLayer\FieldCollection;
 
 class DefinitionGenerator
 {
-    public function generate(Definition $loaderResult): void
+    public function generate(Definition $definition): void
     {
-        if (!file_exists($loaderResult->folder) && !mkdir($concurrentDirectory = $loaderResult->folder, 0777, true) && !is_dir($concurrentDirectory)) {
+        if (!file_exists($definition->folder) && !mkdir($concurrentDirectory = $definition->folder, 0777, true) && !is_dir($concurrentDirectory)) {
             throw new \RuntimeException(sprintf('Directory "%s" was not created', $concurrentDirectory));
         }
 
         $useHelper = new UseHelper();
 
-        if (file_exists($loaderResult->getDefinitionFilePath())) {
-            $namespace = $this->buildNamespaceFromExistingFile($loaderResult->getDefinitionFilePath(), $useHelper);
+        if (file_exists($definition->getDefinitionFilePath())) {
+            $namespace = $this->buildNamespaceFromExistingFile($definition->getDefinitionFilePath(), $useHelper);
         } else {
-            $namespace = $this->buildNewNamespace($loaderResult, $useHelper);
+            $namespace = $this->buildNewNamespace($definition, $useHelper);
         }
 
         $nodeFinder = new NodeFinder();
@@ -54,7 +54,7 @@ class DefinitionGenerator
         $method->stmts = [new Return_(new New_(
             new Name('FieldCollection'),
             [
-                new Arg($this->buildFieldCollection($loaderResult->fields, $useHelper))
+                new Arg($this->buildFieldCollection($definition->fields, $useHelper))
             ]
         ))];
 
@@ -62,7 +62,7 @@ class DefinitionGenerator
 
         $printer = new Standard();
 
-        file_put_contents($loaderResult->getDefinitionFilePath(), $printer->prettyPrintFile([$namespace]));
+        file_put_contents($definition->getDefinitionFilePath(), $printer->prettyPrintFile([$namespace]));
     }
 
     private function buildNewNamespace(Definition $definition, UseHelper $useHelper): Namespace_
@@ -181,7 +181,7 @@ class DefinitionGenerator
                     $args[] = new Arg(new New_(new Name($useHelper->getShortName($flag))));
                 }
 
-                $field = new MethodCall($field, 'setFlags', $args);
+                $field = new MethodCall($field, 'addFlags', $args);
             }
 
             $array->items[] = $field;
