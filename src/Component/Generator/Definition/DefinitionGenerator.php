@@ -4,6 +4,7 @@ namespace Frosh\DevelopmentHelper\Component\Generator\Definition;
 
 use Frosh\DevelopmentHelper\Component\Generator\Struct\Definition;
 use Frosh\DevelopmentHelper\Component\Generator\Struct\Field;
+use Frosh\DevelopmentHelper\Component\Generator\Struct\MappingDefinition;
 use Frosh\DevelopmentHelper\Component\Generator\Struct\TranslationDefinition;
 use Frosh\DevelopmentHelper\Component\Generator\UseHelper;
 use PhpParser\BuilderFactory;
@@ -28,6 +29,7 @@ use PhpParser\PrettyPrinter\Standard;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityDefinition;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityTranslationDefinition;
 use Shopware\Core\Framework\DataAbstractionLayer\FieldCollection;
+use Shopware\Core\Framework\DataAbstractionLayer\MappingEntityDefinition;
 
 class DefinitionGenerator
 {
@@ -72,10 +74,14 @@ class DefinitionGenerator
         $namespace = new Namespace_(new Name($definition->namespace));
 
         $class = new Class_(new Identifier($definition->getDefinitionClassName()));
+        $namespace->stmts[] = $class;
 
         if ($definition instanceof TranslationDefinition) {
             $class->extends = new Name('EntityTranslationDefinition');
             $useHelper->addUse(EntityTranslationDefinition::class);
+        } if ($definition instanceof MappingDefinition) {
+            $class->extends = new Name('MappingEntityDefinition');
+            $useHelper->addUse(MappingEntityDefinition::class);
         } else {
             $class->extends = new Name('EntityDefinition');
             $useHelper->addUse(EntityDefinition::class);
@@ -89,9 +95,14 @@ class DefinitionGenerator
         $defineFields = new ClassMethod(new Identifier('defineFields'));
         $defineFields->returnType = new Identifier('FieldCollection');
         $defineFields->flags = Class_::MODIFIER_PROTECTED;
+        $useHelper->addUse(FieldCollection::class);
 
         $class->stmts[] = $entityName;
         $class->stmts[] = $defineFields;
+
+        if ($definition instanceof MappingDefinition) {
+            return $namespace;
+        }
 
         $class->stmts[] = $builder->method('getEntityClass')
             ->makePublic()
@@ -112,10 +123,6 @@ class DefinitionGenerator
                 ->addStmt(new Return_($builder->classConstFetch('\\' . $definition->parent->getDefinitionClass(), 'class')))
                 ->getNode();
         }
-
-        $namespace->stmts[] = $class;
-
-        $useHelper->addUse(FieldCollection::class);
 
         return $namespace;
     }

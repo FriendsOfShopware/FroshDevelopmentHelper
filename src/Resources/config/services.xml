@@ -5,15 +5,24 @@
            xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd">
 
     <services>
-        <defaults autowire="true" autoconfigure="true" public="false"/>
+        <defaults autowire="true" autoconfigure="true" public="false">
+            <bind key="$kernelRootDir">%kernel.project_dir%</bind>
+            <bind key="$entityDefinitions">%frosh_development_helper.names%</bind>
+        </defaults>
         <prototype namespace="Frosh\DevelopmentHelper\" resource="../../*" exclude="../../Component/Profiler"/>
+        <defaults>
+        </defaults>
+
+        <instanceof id="Frosh\DevelopmentHelper\Component\Generator\QuestionHandler\QuestionHandlerInterface">
+            <tag name="frosh_development_helper.question_helper"/>
+        </instanceof>
 
         <service id="Frosh\DevelopmentHelper\Component\Generator\Definition\EntityConsoleQuestion">
-            <argument key="$entityDefinitions" type="string">%frosh_development_helper.names%</argument>
+            <argument key="$questionHelpers" type="tagged" tag="frosh_development_helper.question_helper"/>
         </service>
 
-        <service id="Frosh\DevelopmentHelper\Component\Twig\Extension\BlockCommentExtension">
-            <argument key="$kernelRootDir">%kernel.project_dir%</argument>
+        <service id="Frosh\DevelopmentHelper\Component\Generator\QuestionHandler\GenericHandler">
+            <tag name="frosh_development_helper.question_helper" priority="-10000"/>
         </service>
     </services>
 </container>

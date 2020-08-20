@@ -2,7 +2,6 @@
 
 namespace Frosh\DevelopmentHelper\Component\Generator\Struct;
 
-use Frosh\DevelopmentHelper\Component\Generator\Definition\Field;
 use Shopware\Core\Framework\Struct\Struct;
 use Symfony\Component\Serializer\NameConverter\CamelCaseToSnakeCaseNameConverter;
 
@@ -11,7 +10,7 @@ class Definition extends Struct
     /**
      * @var Field[]
      */
-    public $fields;
+    public $fields = [];
 
     /**
      * @var string

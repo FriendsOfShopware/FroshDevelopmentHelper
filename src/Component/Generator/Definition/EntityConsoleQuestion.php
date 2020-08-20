@@ -2,6 +2,7 @@
 
 namespace Frosh\DevelopmentHelper\Component\Generator\Definition;
 
+use Frosh\DevelopmentHelper\Component\Generator\QuestionHandler\QuestionHandlerInterface;
 use Frosh\DevelopmentHelper\Component\Generator\Struct\Definition;
 use Frosh\DevelopmentHelper\Component\Generator\Struct\Field;
 use Frosh\DevelopmentHelper\Component\Generator\Struct\Flag;
@@ -15,24 +16,18 @@ use Shopware\Core\Framework\DataAbstractionLayer\Field\TranslatedField;
 use Shopware\Core\Framework\DataAbstractionLayer\Field\TranslationsAssociationField;
 use Symfony\Component\Console\Question\Question;
 use Symfony\Component\Console\Style\SymfonyStyle;
-use Symfony\Component\Serializer\NameConverter\CamelCaseToSnakeCaseNameConverter;
 
 class EntityConsoleQuestion
 {
     /**
-     * @var array
+     * @var QuestionHandlerInterface[]
      */
-    private $fieldsTypes;
+    private $questionHelpers;
 
-    /**
-     * @var array
-     */
-    private $entityDefinitions;
-
-    public function __construct(array $entityDefinitions)
+    public function __construct(iterable $questionHelpers)
     {
         $this->fieldsTypes = TypeMapping::getCompletionTypes();
-        $this->entityDefinitions = $entityDefinitions;
+        $this->questionHelpers = $questionHelpers;
     }
 
     /**
@@ -108,72 +103,11 @@ class EntityConsoleQuestion
             }
         }
 
-        $type = 'Shopware\Core\Framework\DataAbstractionLayer\Field\\' . $type;
-
-        $ref = new \ReflectionClass($type);
-        $parameters = $ref->getConstructor()->getParameters();
-
-        $args = [];
-        foreach ($parameters as $parameter) {
-            if ($parameter->name === 'propertyName') {
-                $args[] = $fieldName;
-                continue;
+        foreach ($this->questionHelpers as $helper) {
+            if ($helper->supports($type)) {
+                return $helper->handle($definition, $io, $fieldName, $type);
             }
-
-            if ($parameter->name === 'referenceClass') {
-                $question = new Question('Reference Class');
-                $question->setAutocompleterValues($this->entityDefinitions);
-                $question->setValidator(function ($value) {
-                    if (!in_array($value, $this->entityDefinitions, true)) {
-                        throw new \InvalidArgumentException(sprintf('%s is an invalid reference class', $value));
-                    }
-
-                    return $value;
-                });
-                $value = $io->askQuestion($question);
-
-                $args[] = $value . '::class';
-                continue;
-            }
-
-            $default = null;
-            if ($parameter->isDefaultValueAvailable()) {
-                $default = $parameter->getDefaultValue();
-            }
-
-            if ($parameter->name === 'storageName' && $default === null) {
-                $default = (new CamelCaseToSnakeCaseNameConverter())->normalize($fieldName);
-            }
-            if (is_bool($default)) {
-                $default = $default ? 'true' : 'false';
-            }
-
-            $question = new Question('Parameter ' . $parameter->name, $default);
-            $answer = $io->askQuestion($question);
-            if ($answer === 'true') {
-                $answer = true;
-            } else if($answer === 'false') {
-                $answer = false;
-            } else if(strlen($answer) && $parameter->hasType()) {
-                $parameterType = (string) $parameter->getType();
-
-                if ($parameterType === 'int') {
-                    $answer = (int) $answer;
-                } else if($parameterType === 'float') {
-                    $answer = (float) $answer;
-                }
-            }
-
-
-            $args[] = $answer;
         }
-
-        return new Field(
-            $type,
-            $args,
-            QuestionHelper::handleFlags($io, $fieldName, $type, $args),
-            $definition->translation !== null && QuestionHelper::handleTranslationQuestion($io)
-        );
     }
 
     private function hasField(array $fieldCollection, string $field): bool
