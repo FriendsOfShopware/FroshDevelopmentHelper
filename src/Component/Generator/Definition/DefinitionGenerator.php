@@ -79,7 +79,7 @@ class DefinitionGenerator
         if ($definition instanceof TranslationDefinition) {
             $class->extends = new Name('EntityTranslationDefinition');
             $useHelper->addUse(EntityTranslationDefinition::class);
-        } if ($definition instanceof MappingDefinition) {
+        } elseif ($definition instanceof MappingDefinition) {
             $class->extends = new Name('MappingEntityDefinition');
             $useHelper->addUse(MappingEntityDefinition::class);
         } else {
