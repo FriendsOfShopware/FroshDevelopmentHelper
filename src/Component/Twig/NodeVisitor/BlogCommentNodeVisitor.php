@@ -3,6 +3,7 @@
 namespace Frosh\DevelopmentHelper\Component\Twig\NodeVisitor;
 
 use Twig\Environment;
+use Twig\Loader\FilesystemLoader;
 use Twig\Node\BlockNode;
 use Twig\Node\BodyNode;
 use Twig\Node\ModuleNode;
@@ -16,7 +17,8 @@ class BlogCommentNodeVisitor extends AbstractNodeVisitor
     private const BLACKLIST_KEYS = [
         'head_meta_tags',
         'layout_head_title',
-        'page_product_detail_buy_form_action'
+        'page_product_detail_buy_form_action',
+        'base_body_classes'
     ];
 
     /**
@@ -43,6 +45,10 @@ class BlogCommentNodeVisitor extends AbstractNodeVisitor
      */
     protected function doLeaveNode(Node $node, Environment $env): Node
     {
+        if (! $env->getLoader() instanceof FilesystemLoader) {
+            return $node;
+        }
+
         $path = $node->getTemplateName();
         if ($node->getSourceContext() instanceof Source) {
             $path = ltrim(str_replace($this->kernelRootDir, '', $node->getSourceContext()->getPath()), '/');
