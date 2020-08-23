@@ -3,7 +3,9 @@
 namespace Frosh\DevelopmentHelper\Component\Generator\QuestionHandler;
 
 use Frosh\DevelopmentHelper\Component\Generator\Definition\DefinitionGenerator;
+use Frosh\DevelopmentHelper\Component\Generator\Definition\EntityGenerator;
 use Frosh\DevelopmentHelper\Component\Generator\Definition\EntityLoader;
+use Frosh\DevelopmentHelper\Component\Generator\Definition\ExtensionGenerator;
 use Frosh\DevelopmentHelper\Component\Generator\Struct\Definition;
 use Frosh\DevelopmentHelper\Component\Generator\Struct\Field;
 use Frosh\DevelopmentHelper\Component\Generator\Struct\Flag;
@@ -35,11 +37,28 @@ class ManyToManyHandler implements QuestionHandlerInterface
      */
     private $definitionGenerator;
 
-    public function __construct(array $entityDefinitions, EntityLoader $loader, DefinitionGenerator $definitionGenerator)
-    {
+    /**
+     * @var EntityGenerator
+     */
+    private $entityGenerator;
+
+    /**
+     * @var ExtensionGenerator
+     */
+    private $extensionGenerator;
+
+    public function __construct(
+        array $entityDefinitions,
+        EntityLoader $loader,
+        DefinitionGenerator $definitionGenerator,
+        EntityGenerator $entityGenerator,
+        ExtensionGenerator $extensionGenerator
+    ) {
         $this->entityDefinitions = $entityDefinitions;
         $this->loader = $loader;
         $this->definitionGenerator = $definitionGenerator;
+        $this->entityGenerator = $entityGenerator;
+        $this->extensionGenerator = $extensionGenerator;
     }
 
     public function supports(string $field): bool
@@ -75,7 +94,7 @@ class ManyToManyHandler implements QuestionHandlerInterface
         $field->args[] = $mappingDefinition->getStorageNameByReference($definition->getDefinitionClass());
         $field->args[] = $mappingDefinition->getStorageNameByReference($referenceDefinition->getDefinitionClass());
 
-        $this->updateReference($referenceDefinition, $definition, $mappingDefinition);
+        $this->updateReference($io, $referenceDefinition, $definition, $mappingDefinition);
 
         return $field;
     }
@@ -85,7 +104,7 @@ class ManyToManyHandler implements QuestionHandlerInterface
         $mapping = new MappingDefinition();
         $mapping->name = $definition->name . $reference->name;
         $mapping->namespace = $definition->namespace . '\\Aggregate\\' . $mapping->name;
-        $mapping->folder = $definition->folder . 'Aggregate/' . $mapping->name. '/';
+        $mapping->folder = $definition->folder . 'Aggregate/' . $mapping->name . '/';
 
         $mapping->fields[] = new Field(
             FkField::class,
@@ -104,7 +123,7 @@ class ManyToManyHandler implements QuestionHandlerInterface
             [
                 lcfirst($definition->name),
                 $this->normalize($definition->name) . '_id',
-                $definition->getDefinitionClass(). '::class',
+                $definition->getDefinitionClass() . '::class',
                 'id',
                 false
             ]
@@ -115,7 +134,7 @@ class ManyToManyHandler implements QuestionHandlerInterface
             [
                 $this->normalize($reference->name) . '_id',
                 lcfirst($reference->name) . 'Id',
-                $reference->getDefinitionClass(). '::class'
+                $reference->getDefinitionClass() . '::class'
             ],
             [
                 new Flag(PrimaryKey::class),
@@ -127,7 +146,7 @@ class ManyToManyHandler implements QuestionHandlerInterface
             [
                 lcfirst($reference->name),
                 $this->normalize($reference->name) . '_id',
-                $reference->getDefinitionClass(). '::class',
+                $reference->getDefinitionClass() . '::class',
                 'id',
                 false
             ]
@@ -143,19 +162,27 @@ class ManyToManyHandler implements QuestionHandlerInterface
         return (new CamelCaseToSnakeCaseNameConverter())->normalize($name);
     }
 
-    private function updateReference(Definition $referenceDefinition, Definition $definition, MappingDefinition $mapping): void
+    private function updateReference(SymfonyStyle $io, Definition $reference, Definition $definition, MappingDefinition $mapping): void
     {
-        $referenceDefinition->fields[] = new Field(
+        $createExtension = $io->confirm('Create an own entity extensions?');
+
+        $field = new Field(
             ManyToManyAssociationField::class,
             [
                 lcfirst($definition->name) . 's',
                 $definition->getDefinitionClass() . '::class',
                 $mapping->getDefinitionClass() . '::class',
-                $mapping->getStorageNameByReference($referenceDefinition->getDefinitionClass()),
+                $mapping->getStorageNameByReference($reference->getDefinitionClass()),
                 $mapping->getStorageNameByReference($definition->getDefinitionClass()),
             ]
         );
 
-        $this->definitionGenerator->generate($referenceDefinition);
+        if ($createExtension) {
+            $this->extensionGenerator->generate($definition, $reference, $field);
+        } else {
+            $reference->fields[] = $field;
+            $this->definitionGenerator->generate($reference);
+            $this->entityGenerator->generate($reference);
+        }
     }
 }

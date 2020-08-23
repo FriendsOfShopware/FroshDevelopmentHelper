@@ -125,7 +125,7 @@ class Field
 
         $ref = new \ReflectionClass($this->name);
         foreach ($ref->getConstructor()->getParameters() as $i => $parameter) {
-            if ($parameter->name === 'referenceClass' || $parameter->name === 'mappingReferenceColumn') {
+            if ($parameter->name === 'referenceClass' || $parameter->name === 'referenceDefinition') {
                 return $this->referenceClass = $this->args[$i];
             }
         }
