@@ -15,4 +15,11 @@ Successor plugin of FroshProfiler and FroshMailCatcher
 * Disables Twig Cache
 * Twig Variables in Twig Tab
 * Generate definition from command line
-* **Coming soon more**
+
+### Generating Entities
+
+Start wizard with
+
+```
+./bin/console frosh:make:definition My\\Plugin\\Namespace\\SomeDefinition
+```
