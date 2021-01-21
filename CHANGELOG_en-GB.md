@@ -1,3 +1,8 @@
+# 0.2.2
+
+- Fix autoloading problems of composer
+- Fix kernel debug detection
+
 # 0.2.1
 
 - Shopware 6.3 compability
