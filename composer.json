@@ -26,8 +26,8 @@
             "en-GB": "Helpful development tools"
         },
         "description": {
-            "de-DE": "Zeigt dir Blöcke, Template Variabeln an",
-            "en-GB": "Zeigt dir Blöcke, Template Variabeln an"
+            "de-DE": "Stellt Hilfsfunktionen für die Entwicklung von Plugins in Shopware 6 bereit. Ideal für Entwickler um in eigenen Developer- oder Test-Umgebungen Shopware 6 debuggen zu können.",
+            "en-GB": "Provides help functions for the development of plugins in Shopware 6. Ideal for developers to debug Shopware 6 in their own developer or test environments."
         },
         "manufacturerLink": {
             "de-DE": "https://github.com/FriendsOfShopware/FroshDevelopmentHelper",
