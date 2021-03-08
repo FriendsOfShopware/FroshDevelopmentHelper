@@ -31,7 +31,7 @@ mkdir($composerWorkingDir);
 
 file_put_contents($composerWorkingDir . '/composer.json', json_encode($newComposerJson, JSON_PRETTY_PRINT));
 
-exec(sprintf('COMPOSER="%s" %s install -d "%s"', $composerFile, $composerPhar, $composerWorkingDir));
+exec(sprintf('COMPOSER=%s %s install -d %s', escapeshellarg($composerFile), $composerPhar, escapeshellarg($composerWorkingDir)));
 
 $autoloadFile = <<<EOF
 <?php
