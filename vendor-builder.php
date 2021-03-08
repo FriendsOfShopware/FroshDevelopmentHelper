@@ -1,7 +1,7 @@
 <?php
 
 // Set the path to composer. Can also be something like "php /home/user/composer.phar"
-$composerPhar = getenv('COMPOSER_PHAR') ?: 'composer';
+$composerPhar = $_SERVER['COMPOSER_PHAR'] ?? 'composer';
 
 $pluginDepsFile = __DIR__ . '/deps.json';
 $composerWorkingDir = __DIR__ . '/vendor';
