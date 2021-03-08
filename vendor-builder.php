@@ -8,7 +8,7 @@ $composerWorkingDir = __DIR__ . '/vendor';
 $composerFile = $composerWorkingDir . '/composer.json';
 $shopwareComposerLockFile = __DIR__ . '/../../../composer.lock';
 
-exec('rm -rf "' . $composerWorkingDir . '"');
+exec(sprintf('rm -rf %s', escapeshellarg($composerWorkingDir)));
 
 $lock = json_decode(file_get_contents($shopwareComposerLockFile), true);
 $currentCompopserJson = json_decode(file_get_contents($pluginDepsFile), true);
