@@ -64,8 +64,15 @@ class GenericHandler implements QuestionHandlerInterface
             if ($parameter->name === 'storageName' && $default === null) {
                 $default = (new CamelCaseToSnakeCaseNameConverter())->normalize($name);
             }
+
             if (is_bool($default)) {
                 $default = $default ? 'true' : 'false';
+            }
+
+            // array is currently not supported
+            if (is_array($default)) {
+                $args[] = $default;
+                continue;
             }
 
             $question = new Question('Parameter ' . $parameter->name, $default);
@@ -83,7 +90,6 @@ class GenericHandler implements QuestionHandlerInterface
                     $answer = (float) $answer;
                 }
             }
-
 
             $args[] = $answer;
         }
