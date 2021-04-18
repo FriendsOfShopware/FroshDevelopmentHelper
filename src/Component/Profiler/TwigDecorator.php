@@ -8,7 +8,7 @@ class TwigDecorator extends Environment
 {
     private $renders = [];
 
-    public function render(string $name, array $context = [])
+    public function render($name, array $context = []): string
     {
         if (strpos($name, 'WebProfiler') === false) {
             $this->renders[$name] = $context;

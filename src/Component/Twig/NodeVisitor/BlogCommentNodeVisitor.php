@@ -45,10 +45,6 @@ class BlogCommentNodeVisitor extends AbstractNodeVisitor
      */
     protected function doLeaveNode(Node $node, Environment $env): Node
     {
-        if (! $env->getLoader() instanceof FilesystemLoader) {
-            return $node;
-        }
-
         $path = $node->getTemplateName();
         if ($node->getSourceContext() instanceof Source) {
             $path = ltrim(str_replace($this->kernelRootDir, '', $node->getSourceContext()->getPath()), '/');
