@@ -54,6 +54,8 @@ class MakePlugin extends Command
         $this->makeChangelogFiles($fs, $pluginPath);
         $this->makeDefaultServicesXml($fs, $pluginPath);
 
+        $io->warning('To pass the Extension Store guidelines you need to provide an plugin.png in src/Resources/config/plugin.png');
+
         return 0;
     }
 
