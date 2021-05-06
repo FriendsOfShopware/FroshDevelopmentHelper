@@ -71,7 +71,7 @@ class MakeDefinition extends Command
             ->addArgument('namespace', InputArgument::REQUIRED, 'Namespace (FroshTest\\Content\\Store)');
     }
 
-    public function execute(InputInterface $input, OutputInterface $output)
+    public function execute(InputInterface $input, OutputInterface $output): int
     {
         $io = new SymfonyStyle($input, $output);
         $result = $this->entityLoader->load($input->getArgument('namespace'), $io);
@@ -89,5 +89,9 @@ class MakeDefinition extends Command
             $this->collectionGenerator->generate($result->translation);
             $this->fixCodeStyle->fix($result->translation);
         }
+
+        $io->warning('Don\'t forget to add this Definition to your services.xml');
+
+        return 0;
     }
 }
