@@ -102,7 +102,7 @@ PHP;
         $dbalExec = '';
 
         foreach ($updateQueries as $sql) {
-            $dbalExec .= sprintf('        $connection->executeUpdate(\'%s\');' . PHP_EOL, $sql);
+            $dbalExec .= sprintf('        $connection->executeUpdate(\'%s\');' . PHP_EOL, addslashes($sql));
         }
 
         $content = str_replace(

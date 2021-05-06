@@ -16,10 +16,28 @@ Successor plugin of FroshProfiler and FroshMailCatcher
 * Twig Variables in Twig Tab
 * Generate definition from command line
 
-### Generating Entities
+### Generate plugin
+
+```shell
+./bin/console frosh:make:plugin <plugin-name>
+```
+
+Optional with `--namespace=xxx\\xx` specifying the namespace
+
+### Generating Entities or edit Entities
 
 Start wizard with
 
 ```
 ./bin/console frosh:make:definition My\\Plugin\\Namespace\\SomeDefinition
 ```
+
+### Generate Migration
+
+```shell
+./bin/console frosh:make:migration <plugin-name> <entity-name>
+```
+
+Example entity name: product, category, order
+
+Checks the difference of that definition with the database and creates a migration
