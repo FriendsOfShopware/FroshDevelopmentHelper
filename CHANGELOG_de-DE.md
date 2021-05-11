@@ -1,3 +1,8 @@
+# 0.3.0
+
+- Shopware 6.4 Kompatibilität
+
+
 # 0.2.2
 
 - Behebung von Autoloading-Problemen des Composers

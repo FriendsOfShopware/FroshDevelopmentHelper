@@ -2,7 +2,7 @@ name: StoreCheck
 on:
     push:
         branches:
-            - master
+            - '0.3'
         tags:
             - '*'
 
@@ -10,12 +10,12 @@ env:
     PLUGIN_NAME: ${{ github.event.repository.name }}
     ACCOUNT_USER: ${{ secrets.ACCOUNT_USER }}
     ACCOUNT_PASSWORD: ${{ secrets.ACCOUNT_PASSWORD }}
-    PLUGIN_UPLOADER_VERSION: 0.3.11
 
 jobs:
     validatePlugin:
         if: startsWith(github.ref, 'refs/tags/') != true
         name: Check for Store compliance
+        container: ghcr.io/friendsofshopware/platform-plugin-dev:v6.4.0
         runs-on: ubuntu-latest
         steps:
             -   name: Checkout
@@ -27,14 +27,15 @@ jobs:
                 run: wget 'https://github.com/FriendsOfShopware/FroshPluginUploader/releases/download/${{ env.PLUGIN_UPLOADER_VERSION }}/frosh-plugin-upload.phar' -O frosh-plugin-upload.phar
 
             -   name: Build Zip
-                run: php frosh-plugin-upload.phar ext:zip ${PLUGIN_NAME}
+                run: /opt/bin/plugin-uploader ext:zip ${PLUGIN_NAME}
 
             -   name: Validate Zip
-                run: php frosh-plugin-upload.phar ext:validate $(pwd)/${PLUGIN_NAME}*.zip
+                run: /opt/bin/plugin-uploader ext:validate $(pwd)/${PLUGIN_NAME}*.zip
 
     StoreUpdate:
         needs: validatePlugin
         name: Update Store page
+        container: ghcr.io/friendsofshopware/platform-plugin-dev:v6.4.0
         if: startsWith(github.ref, 'refs/tags/') != true
         runs-on: ubuntu-latest
         steps:
@@ -43,14 +44,12 @@ jobs:
                 with:
                     path: ${{ env.PLUGIN_NAME }}
 
-            -   name: getPluginUploader
-                run: wget 'https://github.com/FriendsOfShopware/FroshPluginUploader/releases/download/${{ env.PLUGIN_UPLOADER_VERSION }}/frosh-plugin-upload.phar' -O frosh-plugin-upload.phar
-
             -   name: StoreUpdate
-                run: php frosh-plugin-upload.phar ext:update $(pwd)/${{ env.PLUGIN_NAME }}/
+                run: /opt/bin/plugin-uploader ext:update $(pwd)/${{ env.PLUGIN_NAME }}/
 
     StoreRelease:
         if: startsWith(github.ref, 'refs/tags/')
+        container: ghcr.io/friendsofshopware/platform-plugin-dev:v6.4.0
         runs-on: ubuntu-latest
         name: Upload Extension to Store
         steps:
@@ -59,13 +58,10 @@ jobs:
                 with:
                     path: ${{ env.PLUGIN_NAME }}
 
-            -   name: Download Extension Uploader
-                run: wget 'https://github.com/FriendsOfShopware/FroshPluginUploader/releases/download/${{ env.PLUGIN_UPLOADER_VERSION }}/frosh-plugin-upload.phar' -O frosh-plugin-upload.phar
-
             -   name: Build Zip
-                run: php frosh-plugin-upload.phar ext:zip ${PLUGIN_NAME}
+                run: /opt/bin/plugin-uploader ext:zip ${PLUGIN_NAME}
 
             -   name: StoreUpload
-                run: php frosh-plugin-upload.phar ext:upload $(pwd)/${PLUGIN_NAME}*.zip --createRelease
+                run: /opt/bin/plugin-uploader ext:upload $(pwd)/${PLUGIN_NAME}*.zip --createRelease
                 env:
                     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

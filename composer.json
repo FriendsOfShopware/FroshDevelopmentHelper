@@ -1,6 +1,6 @@
 {
     "name": "frosh/development-helper",
-    "version": "0.2.2",
+    "version": "0.3.0",
     "description": "Development Helper",
     "type": "shopware-platform-plugin",
     "license": "MIT",
@@ -16,7 +16,7 @@
         }
     },
     "require": {
-        "shopware/core": "~6.4"
+        "shopware/core": "~6.4.0"
     },
     "extra": {
         "shopware-plugin-class": "Frosh\\DevelopmentHelper\\FroshDevelopmentHelper",
