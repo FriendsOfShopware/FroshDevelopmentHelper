@@ -137,4 +137,14 @@ class Field
     {
         return is_a($this->name, StorageAware::class, true);
     }
+
+    public function getName(): string
+    {
+        return $this->name;
+    }
+
+    public function getArg(int $index)
+    {
+        return $this->args[$index] ?? null;
+    }
 }

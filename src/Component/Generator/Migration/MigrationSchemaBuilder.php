@@ -31,6 +31,7 @@ use Shopware\Core\Framework\DataAbstractionLayer\Field\ListField;
 use Shopware\Core\Framework\DataAbstractionLayer\Field\LongTextField;
 use Shopware\Core\Framework\DataAbstractionLayer\Field\ManyToOneAssociationField;
 use Shopware\Core\Framework\DataAbstractionLayer\Field\OneToManyAssociationField;
+use Shopware\Core\Framework\DataAbstractionLayer\Field\OneToOneAssociationField;
 use Shopware\Core\Framework\DataAbstractionLayer\Field\ParentAssociationField;
 use Shopware\Core\Framework\DataAbstractionLayer\Field\ParentFkField;
 use Shopware\Core\Framework\DataAbstractionLayer\Field\PasswordField;
@@ -203,11 +204,11 @@ class MigrationSchemaBuilder
     {
         $fields = $definition->getFields()->filter(
             function (Field $field) {
-                if (!$field instanceof ManyToOneAssociationField) {
-                    return false;
+                if ($field instanceof ManyToOneAssociationField || ($field instanceof OneToOneAssociationField && $field->getStorageName() !== 'id')) {
+                    return true;
                 }
 
-                return true;
+                return false;
             }
         );
 

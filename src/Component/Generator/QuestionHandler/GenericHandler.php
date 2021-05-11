@@ -2,9 +2,16 @@
 
 namespace Frosh\DevelopmentHelper\Component\Generator\QuestionHandler;
 
+use Frosh\DevelopmentHelper\Component\Generator\Definition\EntityLoader;
+use Frosh\DevelopmentHelper\Component\Generator\Definition\ExtensionGenerator;
 use Frosh\DevelopmentHelper\Component\Generator\Definition\QuestionHelper;
 use Frosh\DevelopmentHelper\Component\Generator\Struct\Definition;
 use Frosh\DevelopmentHelper\Component\Generator\Struct\Field;
+use Shopware\Core\Framework\DataAbstractionLayer\Field\ManyToOneAssociationField;
+use Shopware\Core\Framework\DataAbstractionLayer\Field\OneToManyAssociationField;
+use Shopware\Core\Framework\DataAbstractionLayer\Field\OneToOneAssociationField;
+use Symfony\Component\Console\Input\ArgvInput;
+use Symfony\Component\Console\Output\NullOutput;
 use Symfony\Component\Console\Question\Question;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\Serializer\NameConverter\CamelCaseToSnakeCaseNameConverter;
@@ -15,10 +22,14 @@ class GenericHandler implements QuestionHandlerInterface
      * @var array
      */
     private $entityDefinitions;
+    private ExtensionGenerator $extensionGenerator;
+    private EntityLoader $entityLoader;
 
-    public function __construct(array $entityDefinitions)
+    public function __construct(array $entityDefinitions, ExtensionGenerator $extensionGenerator, EntityLoader $entityLoader)
     {
         $this->entityDefinitions = $entityDefinitions;
+        $this->extensionGenerator = $extensionGenerator;
+        $this->entityLoader = $entityLoader;
     }
 
     public function supports(string $field): bool
@@ -94,11 +105,70 @@ class GenericHandler implements QuestionHandlerInterface
             $args[] = $answer;
         }
 
-        return new Field(
+        $field = new Field(
             $type,
             $args,
             QuestionHelper::handleFlags($io, $name, $type, $args),
             $definition->translation !== null && QuestionHelper::handleTranslationQuestion($io)
         );
+
+        if (in_array($field->getName(), [OneToOneAssociationField::class, OneToManyAssociationField::class, ManyToOneAssociationField::class])) {
+            if ($io->confirm('Create an own entity extensions?')) {
+                $this->buildEntityExtension($field, $definition);
+            }
+        }
+
+        return $field;
+    }
+
+    private function buildEntityExtension(Field $field, Definition $localDefinition): void
+    {
+        $refClass = str_replace('::class', '', $field->getReferenceClass());
+        $targetDefinition = $this->entityLoader->load($refClass, new SymfonyStyle(new ArgvInput(), new NullOutput()));
+
+        $extensionField = null;
+
+        if ($field->getName() === OneToOneAssociationField::class) {
+            $extensionField = new Field(
+                OneToOneAssociationField::class,
+                [
+                    $this->normalize($localDefinition->getDefinitionName()),
+                    $field->getArg(2), // Obtain reference field from local
+                    $field->getArg(1), // Obtain local field
+                    $localDefinition->getDefinitionClass(). '::class'
+                ]
+            );
+        } else if($field->getName() === OneToManyAssociationField::class) {
+            $extensionField = new Field(
+                ManyToOneAssociationField::class,
+                [
+                    $this->normalize($localDefinition->getDefinitionName()),
+                    $field->getArg(2), // Obtain reference field from local
+                    $localDefinition->getDefinitionClass(). '::class', // Reference class
+                    $field->getArg(3) ?? 'id', // Obtain local field
+                ]
+            );
+        } else if($field->getName() === ManyToOneAssociationField::class) {
+            $extensionField = new Field(
+                OneToManyAssociationField::class,
+                [
+                    $this->normalize($localDefinition->getDefinitionName()),
+                    $localDefinition->getDefinitionClass(). '::class', // Reference class
+                    $field->getArg(1), // Obtain reference field from local
+                    $field->getArg(3) ?? 'id', // Obtain local field
+                ]
+            );
+        }
+
+        $this->extensionGenerator->generate(
+            $localDefinition,
+            $targetDefinition,
+            $extensionField
+        );
+    }
+
+    private function normalize(string $name): string
+    {
+        return (new CamelCaseToSnakeCaseNameConverter())->normalize($name);
     }
 }
