@@ -23,9 +23,6 @@ jobs:
                 with:
                     path: ${{ env.PLUGIN_NAME }}
 
-            -   name: getPluginUploader
-                run: wget 'https://github.com/FriendsOfShopware/FroshPluginUploader/releases/download/${{ env.PLUGIN_UPLOADER_VERSION }}/frosh-plugin-upload.phar' -O frosh-plugin-upload.phar
-
             -   name: Build Zip
                 run: /opt/bin/plugin-uploader ext:zip ${PLUGIN_NAME}
 
