@@ -41,3 +41,11 @@ Start wizard with
 Example entity name: product, category, order
 
 Checks the difference of that definition with the database and creates a migration
+
+### Generate Twig Extension file
+
+```shell
+./bin/console frosh:make:migration <plugin-name>
+```
+
+Asks for the block you want to extend and creates the twig extension file for you
