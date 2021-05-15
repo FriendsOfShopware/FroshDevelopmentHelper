@@ -1,7 +1,0 @@
-{
-    "require": {
-        "nikic/php-parser": "*",
-        "friendsofphp/php-cs-fixer": "*",
-        "psy/psysh": "^0.10.4"
-    }
-}
