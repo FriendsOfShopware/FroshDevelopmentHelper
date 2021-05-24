@@ -6,6 +6,7 @@ Successor plugin of FroshProfiler and FroshMailCatcher
 
 ## Git Version
 * Checkout Plugin in `/custom/plugins/FroshDevelopmentHelper`
+* execute `composer install` within the plugin directory in `/custom/plugins/FroshDevelopmentHelper` 
 * Install the Plugin with the Plugin Manager
 
 ## Features
