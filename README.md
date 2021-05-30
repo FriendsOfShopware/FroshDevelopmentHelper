@@ -59,5 +59,5 @@ debugging. This is similar to the symfony debug bar, but useful in CLI commands 
 Usage:
 
      Kernel::getConnection()->getConfiguration()->setSQLLogger(
-         new \Frosh\DevelopmentHelper\Subscriber\EchoSQLLogger()
+         new \Frosh\DevelopmentHelper\Doctrine\EchoSQLLogger()
      );

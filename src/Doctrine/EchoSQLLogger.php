@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Frosh\DevelopmentHelper\Subscriber;
+namespace Frosh\DevelopmentHelper\Doctrine;
 
 use Doctrine\DBAL\Logging\SQLLogger;
 use Shopware\Core\Profiling\Twig\DoctrineExtension;
