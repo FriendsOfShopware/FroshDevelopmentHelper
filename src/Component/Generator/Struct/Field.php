@@ -58,11 +58,11 @@ class Field
     {
         foreach ($this->flags as $flag) {
             if ($flag->name === Required::class) {
-                return true;
+                return false;
             }
         }
 
-        return false;
+        return true;
     }
 
     public function getPropertyName(): string
