@@ -1,3 +1,7 @@
+# 0.3.1
+
+- Fixed installation using composer
+
 # 0.3.0
 
 - Shopware 6.4 compatibility
