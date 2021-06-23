@@ -61,6 +61,9 @@ trait ParserBuilderTrait
                 case 'boolean':
                     $args[] = new Arg(new ConstFetch(new Name($arg ? 'true' : 'false')));
                     break;
+                case 'array':
+                    $args[] = new Arg(new Expr\Array_());
+                    break;
                 default:
                     throw new \RuntimeException('Invalid type ' . gettype($arg));
             }
