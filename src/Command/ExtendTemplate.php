@@ -130,6 +130,6 @@ TPL;
             return dirname($reflectionClass->getFileName());
         }
 
-        throw new \RuntimeException(sprintf('Cannot find plugin by name "%s"', $plugin));
+        throw new \RuntimeException(sprintf('Cannot find plugin by name "%s"', $name));
     }
 }
