@@ -1,3 +1,7 @@
+# 0.3.2
+
+- Fixed serialization issue with profiler
+
 # 0.3.1
 
 - Fixed installation using composer
