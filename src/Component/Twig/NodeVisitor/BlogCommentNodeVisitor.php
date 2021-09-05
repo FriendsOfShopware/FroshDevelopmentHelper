@@ -3,6 +3,7 @@
 namespace Frosh\DevelopmentHelper\Component\Twig\NodeVisitor;
 
 use Twig\Environment;
+use Twig\Loader\ArrayLoader;
 use Twig\Loader\FilesystemLoader;
 use Twig\Node\BlockNode;
 use Twig\Node\BodyNode;
@@ -46,6 +47,20 @@ class BlogCommentNodeVisitor extends AbstractNodeVisitor
      */
     protected function doLeaveNode(Node $node, Environment $env): Node
     {
+        $twigSource = $node->getSourceContext();
+
+        if ($env->getLoader() instanceof ArrayLoader) {
+            return $node;
+        }
+
+        if ($twigSource === null) {
+            return $node;
+        }
+
+        if ($twigSource->getPath() === '') {
+            return $node;
+        }
+
         $path = $node->getTemplateName();
         if ($node->getSourceContext() instanceof Source) {
             $path = ltrim(str_replace($this->kernelRootDir, '', $node->getSourceContext()->getPath()), '/');
