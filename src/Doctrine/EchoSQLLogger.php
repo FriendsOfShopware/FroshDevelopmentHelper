@@ -4,6 +4,7 @@ namespace Frosh\DevelopmentHelper\Doctrine;
 
 use Doctrine\DBAL\Logging\SQLLogger;
 use Shopware\Core\Profiling\Twig\DoctrineExtension;
+use const PHP_EOL;
 
 /**
  * Print executed SQL to the console, in such a way that they can be easily copied to other SQL tools for further
@@ -16,10 +17,10 @@ class EchoSQLLogger implements SQLLogger
         $doctrineExtension = new DoctrineExtension();
         echo $doctrineExtension->replaceQueryParameters(
             $sql,
-            array_merge($params ?? [], $types ?? [])
+            $params ?? []
         )
             . ';'
-            . \PHP_EOL;
+            . PHP_EOL;
     }
 
     public function stopQuery(): void
