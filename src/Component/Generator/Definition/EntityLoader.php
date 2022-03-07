@@ -206,7 +206,7 @@ class EntityLoader
             $loopNamespace = implode('\\', $namespaceSplit) . '\\';
 
             if (isset($prefixes[$loopNamespace])) {
-                return rtrim($prefixes[$loopNamespace][0] . implode('/', array_reverse($suffix)), '/') . '/';
+                return rtrim(rtrim($prefixes[$loopNamespace][0],'/').'/' . implode('/', array_reverse($suffix)), '/') . '/';
             }
 
             $index = count($namespaceSplit)  -1;
