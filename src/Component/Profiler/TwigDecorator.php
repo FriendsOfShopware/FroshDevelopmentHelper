@@ -3,6 +3,7 @@
 namespace Frosh\DevelopmentHelper\Component\Profiler;
 
 use Twig\Environment;
+use Twig\TemplateWrapper;
 
 class TwigDecorator extends Environment
 {
@@ -10,11 +11,17 @@ class TwigDecorator extends Environment
 
     public function render($name, array $context = []): string
     {
+        $template = $name;
+
+        if ($name instanceof TemplateWrapper) {
+            $name = $name->getTemplateName();
+        }
+
         if (strpos($name, 'WebProfiler') === false) {
             $this->renders[$name] = $context;
         }
 
-        return parent::render($name, $context);
+        return parent::render($template, $context);
     }
 
     public function getTemplateData(): array
