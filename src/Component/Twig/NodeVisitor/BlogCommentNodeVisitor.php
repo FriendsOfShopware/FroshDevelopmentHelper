@@ -20,7 +20,8 @@ class BlogCommentNodeVisitor extends AbstractNodeVisitor
         'layout_head_title',
         'page_product_detail_buy_form_action',
         'base_body_classes',
-        'page_checkout_additional'
+        'page_checkout_additional',
+        'buy_widget_buy_form_action',
     ];
 
     /**
