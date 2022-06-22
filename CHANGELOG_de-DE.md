@@ -1,3 +1,7 @@
+# 0.3.4
+
+- Updated block blacklist
+
 # 0.3.3
 
 - Fixed problems with mail sending
