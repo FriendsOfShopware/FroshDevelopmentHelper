@@ -22,6 +22,9 @@ class BlogCommentNodeVisitor extends AbstractNodeVisitor
         'base_body_classes',
         'page_checkout_additional',
         'buy_widget_buy_form_action',
+        'sitemap',
+        'sitemap_content',
+        'sitemap_content_sitemaps',
     ];
 
     /**
