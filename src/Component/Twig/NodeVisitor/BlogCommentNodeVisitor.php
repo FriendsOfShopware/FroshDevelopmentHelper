@@ -15,13 +15,15 @@ use Twig\Source;
 
 class BlogCommentNodeVisitor extends AbstractNodeVisitor
 {
-    private const BLACKLIST_KEYS = [
+    /** Parts of block names which need to be skipped, for example block that appear
+     * inside a HTML attribute and would corrupt rendering */
+    private const SKIP_BLOCK_KEYWORDS = [
+        'form_action',
+        'class',
+        'attribute',
         'head_meta_tags',
         'layout_head_title',
-        'page_product_detail_buy_form_action',
-        'base_body_classes',
-        'page_checkout_additional',
-        'buy_widget_buy_form_action',
+        'page_checkout_additional',        
     ];
 
     /**
@@ -67,7 +69,7 @@ class BlogCommentNodeVisitor extends AbstractNodeVisitor
             $path = ltrim(str_replace($this->kernelRootDir, '', $node->getSourceContext()->getPath()), '/');
         }
 
-        if ($this->isBlacklisted($node)) {
+        if ($this->isOnSkipList($node)) {
             return $node;
         }
 
@@ -94,7 +96,7 @@ class BlogCommentNodeVisitor extends AbstractNodeVisitor
         return 0;
     }
 
-    private function isBlacklisted(Node $node): bool
+    private function isOnSkipList(Node $node): bool
     {
         $name = $node->getTemplateName();
 
@@ -106,7 +108,7 @@ class BlogCommentNodeVisitor extends AbstractNodeVisitor
             return true;
         }
 
-        foreach (self::BLACKLIST_KEYS as $key) {
+        foreach (self::SKIP_BLOCK_KEYWORDS as $key) {
             if (strpos($name, $key) !== false) {
                 return true;
             }
