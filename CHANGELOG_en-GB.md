@@ -1,3 +1,7 @@
+# 0.3.5
+
+- Updated block blacklist
+
 # 0.3.4
 
 - Updated block blacklist
