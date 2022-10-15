@@ -16,7 +16,7 @@
         }
     },
     "require": {
-        "shopware/core": "~6.4.0",
+        "shopware/core": "~6.4.11",
         "nikic/php-parser": "*",
         "friendsofphp/php-cs-fixer": "*",
         "psy/psysh": "^0.10.4"

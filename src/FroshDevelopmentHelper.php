@@ -13,10 +13,6 @@ if (file_exists(__DIR__ . '/../vendor/autoload.php')) {
     require_once __DIR__ . '/../vendor/autoload.php';
 }
 
-/** @var ClassLoader $c */
-global $classLoader;
-isset($classLoader) && $classLoader->addClassMap(['Doctrine\DBAL\Schema\AbstractAsset' => __DIR__ .'/Patches/Doctrine/AbstractAsset.php']);
-
 class FroshDevelopmentHelper extends Plugin
 {
     public function build(ContainerBuilder $container): void
