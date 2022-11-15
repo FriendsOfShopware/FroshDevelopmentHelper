@@ -4,7 +4,6 @@ namespace Frosh\DevelopmentHelper\Component\Twig\NodeVisitor;
 
 use Twig\Environment;
 use Twig\Loader\ArrayLoader;
-use Twig\Loader\FilesystemLoader;
 use Twig\Node\BlockNode;
 use Twig\Node\BodyNode;
 use Twig\Node\ModuleNode;
@@ -15,27 +14,17 @@ use Twig\Source;
 
 class BlogCommentNodeVisitor extends AbstractNodeVisitor
 {
-
-    /** Parts of block names which need to be skipped, for example block that appear
-￼     * inside a HTML attribute and would corrupt rendering */
-    private const SKIP_BLOCK_KEYWORDS = [
-        'form_action',
-        'class',
-        'attribute',
-        'title',
-        'sitemap',
-        'head_meta_tags',
-        'page_checkout_additional',
-    ];
-
     /**
      * @var string
      */
     private $kernelRootDir;
 
-    public function __construct(string $kernelRootDir)
+    private array $twigExcludeKeywords;
+
+    public function __construct(string $kernelRootDir, array $twigExcludeKeywords)
     {
         $this->kernelRootDir = $kernelRootDir;
+        $this->twigExcludeKeywords = $twigExcludeKeywords;
     }
 
 
@@ -110,7 +99,7 @@ class BlogCommentNodeVisitor extends AbstractNodeVisitor
             return true;
         }
 
-        foreach (self::SKIP_BLOCK_KEYWORDS as $key) {
+        foreach ($this->twigExcludeKeywords as $key) {
             if (strpos($name, $key) !== false) {
                 return true;
             }

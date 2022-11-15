@@ -9,6 +9,7 @@
             <bind key="$kernelRootDir">%kernel.project_dir%</bind>
             <bind key="$entityDefinitions">%frosh_development_helper.names%</bind>
             <bind key="$pluginInfos">%kernel.plugin_infos%</bind>
+            <bind key="$twigExcludeKeywords">%frosh_development_helper.twig.exclude_keywords%</bind>
         </defaults>
         <prototype namespace="Frosh\DevelopmentHelper\" resource="../../*" exclude="../../{Component/Profiler,Patches}"/>
         <defaults>

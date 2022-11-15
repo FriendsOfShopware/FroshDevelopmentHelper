@@ -1,0 +1,10 @@
+frosh_development_helper:
+  twig:
+    exclude_keywords:
+      - form_action
+      - class
+      - attribute
+      - title
+      - sitemap
+      - head_meta_tags
+      - page_checkout_additional

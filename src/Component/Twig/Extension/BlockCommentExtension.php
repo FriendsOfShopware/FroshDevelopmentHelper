@@ -14,13 +14,16 @@ class BlockCommentExtension extends AbstractExtension
      */
     private $kernelRootDir;
 
-    public function __construct(string $kernelRootDir)
+    private array $twigExcludeKeywords;
+
+    public function __construct(string $kernelRootDir, array $twigExcludeKeywords)
     {
         $this->kernelRootDir = $kernelRootDir;
+        $this->twigExcludeKeywords = $twigExcludeKeywords;
     }
 
     public function getNodeVisitors()
     {
-        return [new BlogCommentNodeVisitor($this->kernelRootDir)];
+        return [new BlogCommentNodeVisitor($this->kernelRootDir, $this->twigExcludeKeywords)];
     }
 }
