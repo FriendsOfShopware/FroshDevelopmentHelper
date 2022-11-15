@@ -1,3 +1,8 @@
+# 0.3.6
+
+- Updated psysh package
+- Block blacklist is now configureable using Symfony Config
+
 # 0.3.5
 
 - Updated block blacklist
