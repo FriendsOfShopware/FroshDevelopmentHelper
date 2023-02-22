@@ -15,7 +15,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
-#[AsCommand('frosh:make:definition')]
+#[AsCommand('frosh:make:definition', description: 'Generates an entity')]
 class MakeDefinition extends Command
 {
     public function __construct(
@@ -31,7 +31,7 @@ class MakeDefinition extends Command
 
     protected function configure(): void
     {
-        $this->setDescription('Generates an entity')
+        $this
             ->addArgument('namespace', InputArgument::REQUIRED, 'Namespace (FroshTest\\Content\\Store)');
     }
 

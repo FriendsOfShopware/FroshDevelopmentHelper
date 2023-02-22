@@ -15,7 +15,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\Filesystem\Filesystem;
 
-#[AsCommand('frosh:make:migration')]
+#[AsCommand('frosh:make:migration', description: 'Generates a migration')]
 class MakeMigration extends Command
 {
     private readonly DefinitionInstanceRegistry $definitionInstanceRegistry;

@@ -10,7 +10,7 @@ use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
-#[AsCommand('tinker')]
+#[AsCommand('tinker', description: 'Starts a tinker session')]
 class Tinker extends Command
 {
     protected function configure(): void

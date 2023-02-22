@@ -10,7 +10,7 @@ use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
-#[AsCommand('frosh:schema:diff')]
+#[AsCommand('frosh:schema:diff', description: 'Diffs the database structure with the known definitions')]
 class SchemaDiff extends Command
 {
     private readonly Connection $connection;
@@ -19,11 +19,6 @@ class SchemaDiff extends Command
     {
         parent::__construct();
         $this->connection = $connection;
-    }
-
-    public function configure(): void
-    {
-        $this->setDescription('Diffs the database structure with the known definitions');
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int

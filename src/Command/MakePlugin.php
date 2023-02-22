@@ -11,7 +11,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\Filesystem\Filesystem;
 
-#[AsCommand('frosh:make:plugin')]
+#[AsCommand('frosh:make:plugin', description: 'Generates a plugin')]
 class MakePlugin extends Command
 {
     private readonly string $pluginFolderDir;

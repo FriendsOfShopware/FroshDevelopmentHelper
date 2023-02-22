@@ -14,7 +14,7 @@ use Symfony\Component\Console\Question\Question;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\Filesystem\Filesystem;
 
-#[AsCommand('frosh:extend:template')]
+#[AsCommand('frosh:extend:template', description: 'Generates the template extension for you')]
 class ExtendTemplate extends Command
 {
     private readonly CacheClearer $cacheClearer;
@@ -28,7 +28,6 @@ class ExtendTemplate extends Command
     protected function configure()
     {
         $this
-            ->setDescription('Generates the template extension for you')
             ->addArgument('pluginName', InputArgument::REQUIRED, 'Plugin Name');
     }
 

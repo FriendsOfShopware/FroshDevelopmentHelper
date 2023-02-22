@@ -1,3 +1,7 @@
+# 1.0.0
+
+- Shopware 6.5 compatibility
+
 # 0.3.6
 
 - Updated psysh package
