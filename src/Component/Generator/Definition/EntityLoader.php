@@ -2,6 +2,7 @@
 
 namespace Frosh\DevelopmentHelper\Component\Generator\Definition;
 
+use PhpParser\Node\Expr\Array_;
 use PhpParser\Node\Stmt\Use_;
 use PhpParser\Node\Expr\New_;
 use PhpParser\Node\Expr\MethodCall;
@@ -104,6 +105,11 @@ class EntityLoader
             /** @var Node\Expr\New_ $exprNew */
             $exprNew = null;
             if ($item->value instanceof MethodCall) {
+                // Ignore remove flags
+                if ((string) $item->value->name !== 'addFlags') {
+                    continue;
+                }
+
                 foreach ($item->value->args as $arg) {
                     $flags[] = new Flag($this->getFQCN((string) $arg->value->class), $this->parserArgumentsToPhp($arg->value->args));
                 }
@@ -147,6 +153,9 @@ class EntityLoader
                     }
 
                     $args[] = $value;
+                    break;
+                case $arg->value instanceof Array_:
+                    $args[] = $this->parserArgumentsToPhp($arg->value->items);;
                     break;
                 default:
                     throw new \RuntimeException('Type not supported: ' . $arg->value::class);
