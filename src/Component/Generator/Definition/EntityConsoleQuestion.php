@@ -20,14 +20,11 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 class EntityConsoleQuestion
 {
     /**
-     * @var QuestionHandlerInterface[]
+     * @param QuestionHandlerInterface[] $questionHelpers
      */
-    private $questionHelpers;
-
-    public function __construct(iterable $questionHelpers)
+    public function __construct(private readonly iterable $questionHelpers)
     {
         $this->fieldsTypes = TypeMapping::getCompletionTypes();
-        $this->questionHelpers = $questionHelpers;
     }
 
     /**
@@ -123,9 +120,7 @@ class EntityConsoleQuestion
 
     private function getCurrentFields(array $fieldCollection): array
     {
-        return array_map(static function (Field $field) {
-            return $field->getPropertyName();
-        }, $fieldCollection);
+        return array_map(static fn(Field $field) => $field->getPropertyName(), $fieldCollection);
     }
 
     private function addMissingFkFields(array $fieldCollection): array

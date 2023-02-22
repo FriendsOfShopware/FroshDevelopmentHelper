@@ -22,43 +22,14 @@ use Symfony\Component\Serializer\NameConverter\CamelCaseToSnakeCaseNameConverter
 
 class ManyToManyHandler implements QuestionHandlerInterface
 {
-    /**
-     * @var array
-     */
-    private $entityDefinitions;
-
-    /**
-     * @var EntityLoader
-     */
-    private $loader;
-
-    /**
-     * @var DefinitionGenerator
-     */
-    private $definitionGenerator;
-
-    /**
-     * @var EntityGenerator
-     */
-    private $entityGenerator;
-
-    /**
-     * @var ExtensionGenerator
-     */
-    private $extensionGenerator;
-
     public function __construct(
-        array $entityDefinitions,
-        EntityLoader $loader,
-        DefinitionGenerator $definitionGenerator,
-        EntityGenerator $entityGenerator,
-        ExtensionGenerator $extensionGenerator
-    ) {
-        $this->entityDefinitions = $entityDefinitions;
-        $this->loader = $loader;
-        $this->definitionGenerator = $definitionGenerator;
-        $this->entityGenerator = $entityGenerator;
-        $this->extensionGenerator = $extensionGenerator;
+        private readonly array $entityDefinitions,
+        private readonly EntityLoader $loader,
+        private readonly DefinitionGenerator $definitionGenerator,
+        private readonly EntityGenerator $entityGenerator,
+        private readonly ExtensionGenerator $extensionGenerator
+    )
+    {
     }
 
     public function supports(string $field): bool

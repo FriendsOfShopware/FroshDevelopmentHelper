@@ -12,8 +12,8 @@
             <bind key="$twigExcludeKeywords">%frosh_development_helper.twig.exclude_keywords%</bind>
         </defaults>
         <prototype namespace="Frosh\DevelopmentHelper\" resource="../../*" exclude="../../{Component/Profiler,Patches}"/>
-        <defaults>
-        </defaults>
+
+        <service id="Shopware\Core\Kernel" alias="kernel"/>
 
         <instanceof id="Frosh\DevelopmentHelper\Component\Generator\QuestionHandler\QuestionHandlerInterface">
             <tag name="frosh_development_helper.question_helper"/>

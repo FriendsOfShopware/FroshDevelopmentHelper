@@ -2,6 +2,13 @@
 
 namespace Frosh\DevelopmentHelper\Component\Generator\Definition;
 
+use PhpParser\Node\Stmt\Use_;
+use PhpParser\Node\Expr\New_;
+use PhpParser\Node\Expr\MethodCall;
+use PhpParser\Node\Scalar\String_;
+use PhpParser\Node\Scalar\LNumber;
+use PhpParser\Node\Expr\ClassConstFetch;
+use PhpParser\Node\Expr\ConstFetch;
 use Frosh\DevelopmentHelper\Component\Generator\Struct\Definition;
 use Frosh\DevelopmentHelper\Component\Generator\Struct\Field;
 use Frosh\DevelopmentHelper\Component\Generator\Struct\Flag;
@@ -11,6 +18,7 @@ use PhpParser\Node\Stmt\ClassMethod;
 use PhpParser\NodeFinder;
 use PhpParser\ParserFactory;
 use Shopware\Core\Framework\DataAbstractionLayer\DefinitionInstanceRegistry;
+use Shopware\Core\Kernel;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\Filesystem\Filesystem;
 
@@ -19,15 +27,10 @@ class EntityLoader
     /**
      * @var Node\Stmt\Use_[]
      */
-    private $useFlags;
-    /**
-     * @var DefinitionInstanceRegistry
-     */
-    private $instanceRegistry;
+    private ?array $useFlags = null;
 
-    public function __construct(DefinitionInstanceRegistry $instanceRegistry)
+    public function __construct(private readonly DefinitionInstanceRegistry $instanceRegistry, private readonly Kernel $kernel)
     {
-        $this->instanceRegistry = $instanceRegistry;
     }
 
     public function load(string $class, SymfonyStyle $io): Definition
@@ -81,20 +84,16 @@ class EntityLoader
 
         $nodeFinder = new NodeFinder();
 
-        $this->useFlags = $nodeFinder->findInstanceOf($ast, Node\Stmt\Use_::class);
+        $this->useFlags = $nodeFinder->findInstanceOf($ast, Use_::class);
 
-        $method = $nodeFinder->findFirst($ast, function (Node $node) {
-            return $node instanceof ClassMethod && $node->name->name === 'defineFields';
-        });
+        $method = $nodeFinder->findFirst($ast, fn(Node $node) => $node instanceof ClassMethod && $node->name->name === 'defineFields');
 
         if (! $method instanceof ClassMethod) {
             throw new \RuntimeException('Class does not implement defineFields');
         }
 
         /** @var Node\Expr\New_ $fieldCollection */
-        $fieldCollection = $nodeFinder->findFirst([$method], function (Node $node) {
-            return $node instanceof Node\Expr\New_ && (string) $node->class === 'FieldCollection';
-        });
+        $fieldCollection = $nodeFinder->findFirst([$method], fn(Node $node) => $node instanceof New_ && (string) $node->class === 'FieldCollection');
 
         /** @var Node\Expr\Array_ $array */
         $array = $fieldCollection->args[0]->value;
@@ -104,7 +103,7 @@ class EntityLoader
             $flags = [];
             /** @var Node\Expr\New_ $exprNew */
             $exprNew = null;
-            if ($item->value instanceof Node\Expr\MethodCall) {
+            if ($item->value instanceof MethodCall) {
                 foreach ($item->value->args as $arg) {
                     $flags[] = new Flag($this->getFQCN((string) $arg->value->class), $this->parserArgumentsToPhp($arg->value->args));
                 }
@@ -128,16 +127,16 @@ class EntityLoader
         /** @var Node\Arg $arg */
         foreach ($element as $arg) {
             switch (true) {
-                case $arg->value instanceof Node\Scalar\String_:
+                case $arg->value instanceof String_:
                     $args[] = (string) $arg->value->value;
                     break;
-                case $arg->value instanceof Node\Scalar\LNumber:
+                case $arg->value instanceof LNumber:
                     $args[] = (int) $arg->value->value;
                     break;
-                case $arg->value instanceof Node\Expr\ClassConstFetch:
+                case $arg->value instanceof ClassConstFetch:
                     $args[] = $this->getFQCN($arg->value->class) . '::' . $arg->value->name;
                     break;
-                case $arg->value instanceof Node\Expr\ConstFetch:
+                case $arg->value instanceof ConstFetch:
                     $value = (string) $arg->value->name;
                     if ($value === 'null') {
                         $value = null;
@@ -150,7 +149,7 @@ class EntityLoader
                     $args[] = $value;
                     break;
                 default:
-                    throw new \RuntimeException('Type not supported: ' . get_class($arg->value));
+                    throw new \RuntimeException('Type not supported: ' . $arg->value::class);
             }
         }
 
@@ -162,7 +161,7 @@ class EntityLoader
         foreach ($this->useFlags as $useFlag) {
             /** @var Node\Stmt\UseUse $item */
             foreach ($useFlag->uses as $item) {
-                if (strpos((string) $item->name, '\\' . $name) !== false) {
+                if (str_contains((string) $item->name, '\\' . $name)) {
                     return $item->name;
                 }
             }
@@ -194,8 +193,7 @@ class EntityLoader
 
     private function getNewEntityFolder(string $namespace): string
     {
-        global $classLoader;
-        $prefixes = $classLoader->getPrefixesPsr4();
+        $prefixes = $this->kernel->getPluginLoader()->getClassLoader()->getPrefixesPsr4();
 
         $namespaceSplit = explode('\\', $namespace);
         unset($namespaceSplit[count($namespaceSplit)  -1 ]);
@@ -206,7 +204,7 @@ class EntityLoader
             $loopNamespace = implode('\\', $namespaceSplit) . '\\';
 
             if (isset($prefixes[$loopNamespace])) {
-                return rtrim(rtrim($prefixes[$loopNamespace][0],'/').'/' . implode('/', array_reverse($suffix)), '/') . '/';
+                return rtrim(rtrim((string) $prefixes[$loopNamespace][0],'/').'/' . implode('/', array_reverse($suffix)), '/') . '/';
             }
 
             $index = count($namespaceSplit)  -1;

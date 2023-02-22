@@ -14,17 +14,8 @@ use Twig\Source;
 
 class BlogCommentNodeVisitor extends AbstractNodeVisitor
 {
-    /**
-     * @var string
-     */
-    private $kernelRootDir;
-
-    private array $twigExcludeKeywords;
-
-    public function __construct(string $kernelRootDir, array $twigExcludeKeywords)
+    public function __construct(private readonly string $kernelRootDir, private readonly array $twigExcludeKeywords)
     {
-        $this->kernelRootDir = $kernelRootDir;
-        $this->twigExcludeKeywords = $twigExcludeKeywords;
     }
 
 
@@ -57,7 +48,7 @@ class BlogCommentNodeVisitor extends AbstractNodeVisitor
 
         $path = $node->getTemplateName();
         if ($node->getSourceContext() instanceof Source) {
-            $path = ltrim(str_replace($this->kernelRootDir, '', $node->getSourceContext()->getPath()), '/');
+            $path = ltrim(str_replace($this->kernelRootDir, '', (string) $node->getSourceContext()->getPath()), '/');
         }
 
         if ($this->shouldSkip($node)) {
@@ -91,6 +82,10 @@ class BlogCommentNodeVisitor extends AbstractNodeVisitor
     {
         $name = $node->getTemplateName();
 
+        if ($node->getSourceContext() && str_contains((string) $node->getSourceContext()->getPath(), 'symfony/web-profiler')) {
+            return true;
+        }
+
         if ($node instanceof BlockNode) {
             $name = $node->getAttribute('name');
         }
@@ -100,7 +95,7 @@ class BlogCommentNodeVisitor extends AbstractNodeVisitor
         }
 
         foreach ($this->twigExcludeKeywords as $key) {
-            if (strpos($name, $key) !== false) {
+            if (str_contains((string) $name, (string) $key)) {
                 return true;
             }
         }

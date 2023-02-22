@@ -52,9 +52,7 @@ class DefinitionGenerator
         $nodeFinder = new NodeFinder();
 
         /** @var ClassMethod $method */
-        $method = $nodeFinder->findFirst([$namespace], static function (Node $node) {
-            return $node instanceof ClassMethod && $node->name->name === 'defineFields';
-        });
+        $method = $nodeFinder->findFirst([$namespace], static fn(Node $node) => $node instanceof ClassMethod && $node->name->name === 'defineFields');
 
         $method->stmts = [new Return_(new New_(
             new Name('FieldCollection'),

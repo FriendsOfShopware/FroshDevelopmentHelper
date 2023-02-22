@@ -8,14 +8,8 @@ use Twig\Profiler\Profile;
 
 class TwigDataCollector extends BaseTwigDataCollector
 {
-    /**
-     * @var TwigDecorator
-     */
-    private $twig;
-
-    public function __construct(Profile $profile, Environment $twig = null)
+    public function __construct(Profile $profile, private readonly Environment $twig)
     {
-        $this->twig = $twig;
         parent::__construct($profile, $twig);
     }
 
@@ -24,10 +18,10 @@ class TwigDataCollector extends BaseTwigDataCollector
         return $this->data['renders'];
     }
 
-    public function lateCollect()
+    public function lateCollect(): void
     {
         $this->data['renders'] = json_decode(json_encode($this->twig->getTemplateData()), true);
 
-        return parent::lateCollect();
+        parent::lateCollect();
     }
 }

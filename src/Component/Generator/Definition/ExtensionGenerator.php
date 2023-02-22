@@ -2,6 +2,7 @@
 
 namespace Frosh\DevelopmentHelper\Component\Generator\Definition;
 
+use PhpParser\Node\Stmt\Expression;
 use Frosh\DevelopmentHelper\Component\Generator\Struct\Definition;
 use Frosh\DevelopmentHelper\Component\Generator\Struct\Field;
 use Frosh\DevelopmentHelper\Component\Generator\UseHelper;
@@ -46,12 +47,10 @@ class ExtensionGenerator
         $builder = new BuilderFactory();
 
         /** @var ClassMethod $method */
-        $method = $nodeFinder->findFirst([$namespace], static function (Node $node) {
-            return $node instanceof ClassMethod && $node->name->name === 'extendFields';
-        });
+        $method = $nodeFinder->findFirst([$namespace], static fn(Node $node) => $node instanceof ClassMethod && $node->name->name === 'extendFields');
 
         $useHelper->addUse($field->name);
-        $method->stmts[] = new Node\Stmt\Expression($builder->methodCall($builder->var('collection'), new Identifier('add'), [$this->buildField($field, $useHelper)]));
+        $method->stmts[] = new Expression($builder->methodCall($builder->var('collection'), new Identifier('add'), [$this->buildField($field, $useHelper)]));
 
         $namespace->stmts = array_merge($useHelper->getStms(), $namespace->stmts);
 

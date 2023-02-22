@@ -8,8 +8,8 @@ use PhpParser\Node\Stmt\UseUse;
 
 class UseHelper
 {
-    private $alreadyAddedUses = [];
-    private $printUses = [];
+    private array $alreadyAddedUses = [];
+    private array $printUses = [];
 
     public function addUsage(string $use): void
     {
@@ -31,9 +31,7 @@ class UseHelper
      */
     public function getStms(): array
     {
-        return array_map(static function (string $use) {
-            return new Use_([new UseUse(new Name($use))]);
-        }, $this->printUses);
+        return array_map(static fn(string $use) => new Use_([new UseUse(new Name($use))]), $this->printUses);
     }
 
     public function getShortName(string $name): string

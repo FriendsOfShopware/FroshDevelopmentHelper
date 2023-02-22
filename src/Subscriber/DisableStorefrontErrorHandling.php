@@ -10,22 +10,18 @@ use Symfony\Component\HttpKernel\KernelEvents;
 
 class DisableStorefrontErrorHandling implements EventSubscriberInterface
 {
-    /** @var ContainerBagInterface */
-    private $containerBag;
-
-    public function __construct(ContainerBagInterface $containerBag)
+    public function __construct(private readonly ContainerBagInterface $containerBag)
     {
-        $this->containerBag = $containerBag;
     }
 
-    public static function getSubscribedEvents()
+    public static function getSubscribedEvents(): array
     {
         return [
             KernelEvents::EXCEPTION => ['disableFrontendErrorHandling', -95]
         ];
     }
 
-    public function disableFrontendErrorHandling(ExceptionEvent $event)
+    public function disableFrontendErrorHandling(ExceptionEvent $event): void
     {
         //if we are in dev mode, we will see exceptions
         if ($this->containerBag->all()['kernel.debug']) {

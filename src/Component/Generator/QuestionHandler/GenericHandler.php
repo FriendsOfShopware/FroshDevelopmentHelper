@@ -18,18 +18,8 @@ use Symfony\Component\Serializer\NameConverter\CamelCaseToSnakeCaseNameConverter
 
 class GenericHandler implements QuestionHandlerInterface
 {
-    /**
-     * @var array
-     */
-    private $entityDefinitions;
-    private ExtensionGenerator $extensionGenerator;
-    private EntityLoader $entityLoader;
-
-    public function __construct(array $entityDefinitions, ExtensionGenerator $extensionGenerator, EntityLoader $entityLoader)
+    public function __construct(private readonly array $entityDefinitions, private readonly ExtensionGenerator $extensionGenerator, private readonly EntityLoader $entityLoader)
     {
-        $this->entityDefinitions = $entityDefinitions;
-        $this->extensionGenerator = $extensionGenerator;
-        $this->entityLoader = $entityLoader;
     }
 
     public function supports(string $field): bool
@@ -93,7 +83,7 @@ class GenericHandler implements QuestionHandlerInterface
             } else if($answer === 'false') {
                 $answer = false;
             } else if(strlen((string) $answer) && $parameter->hasType()) {
-                $parameterType = (string) $parameter->getType();
+                $parameterType = (string) ($parameter->getType() ? $parameter->getType()->getName() : null);
 
                 if ($parameterType === 'int') {
                     $answer = (int) $answer;

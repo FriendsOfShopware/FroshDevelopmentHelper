@@ -30,7 +30,10 @@ class FixCodeStyle
 
         $resolver = new ConfigurationResolver(
             $config,
-            [],
+            [
+                'dry-run' => false,
+                'stop-on-violation' => false,
+            ],
             getcwd(),
             new ToolInfo()
         );
