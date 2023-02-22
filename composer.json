@@ -1,6 +1,6 @@
 {
     "name": "frosh/development-helper",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "description": "Development Helper",
     "type": "shopware-platform-plugin",
     "license": "MIT",

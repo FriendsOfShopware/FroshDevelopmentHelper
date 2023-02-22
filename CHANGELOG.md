@@ -1,3 +1,8 @@
+# 1.0.1
+
+- fix: formatting of values when they are nullable, fixes #52 by @shyim in https://github.com/FriendsOfShopware/FroshDevelopmentHelper/pull/55
+-fix: customer entity loading, fixes #53 by @shyim in https://github.com/FriendsOfShopware/FroshDevelopmentHelper/pull/57
+
 # 1.0.0
 
 - Shopware 6.5 compatibility
