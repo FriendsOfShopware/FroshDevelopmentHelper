@@ -23,16 +23,8 @@ class CollectionGenerator
         }
 
         $phpDoc = '/**
- * @method void             add(%className% $entity)
- * @method void             set(string $key, %className% $entity)
- * @method %className%[]    getIterator()
- * @method %className%[]    getElements()
- * @method %className%|null get(string $key)
- * @method %className%|null first()
- * @method %className%|null last()
+ * @extends EntityCollection<%className%>
  */';
-
-
 
         $node = $builder
             ->namespace($loaderResult->namespace)
