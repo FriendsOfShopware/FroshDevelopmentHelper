@@ -95,9 +95,9 @@ class GenericHandler implements QuestionHandlerInterface
             } else if(strlen((string) $answer) && $parameter->hasType()) {
                 $parameterType = (string) $parameter->getType();
 
-                if ($parameterType === 'int') {
+                if ($parameterType === 'int' || $parameterType === '?int') {
                     $answer = (int) $answer;
-                } else if($parameterType === 'float') {
+                } else if($parameterType === 'float' || $parameterType === '?float') {
                     $answer = (float) $answer;
                 }
             }
