@@ -81,7 +81,6 @@ class TypeMapping
         TreePathField::class => 'string',
         UpdatedAtField::class => '\DateTime',
         VersionField::class => 'string',
-        WhitelistRuleField::class => 'array',
         PasswordField::class => 'string',
         NumberRangeField::class => 'string',
         ManyToManyIdField::class => 'array',
@@ -110,7 +109,7 @@ class TypeMapping
         if ($type === 'associationField') {
             $type = substr($field->getReferenceClass(), 0, -7);
 
-            if (strpos($type, '\\') !== false) {
+            if (str_contains($type, '\\')) {
                 $type = '\\' . $type;
             }
         }

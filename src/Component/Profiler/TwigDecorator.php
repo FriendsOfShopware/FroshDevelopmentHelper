@@ -7,7 +7,7 @@ use Twig\TemplateWrapper;
 
 class TwigDecorator extends Environment
 {
-    private $renders = [];
+    private array $renders = [];
 
     public function render($name, array $context = []): string
     {
@@ -17,7 +17,7 @@ class TwigDecorator extends Environment
             $name = $name->getTemplateName();
         }
 
-        if (strpos($name, 'WebProfiler') === false) {
+        if (!str_contains((string) $name, 'WebProfiler')) {
             $this->renders[$name] = $context;
         }
 

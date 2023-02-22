@@ -66,47 +66,22 @@ class EntityGenerator
                 continue;
             }
 
-            $type = TypeMapping::mapToPhpType($field, true, $definition);
-
-            $class->stmts[] = $builder->property($field->getPropertyName())->makeProtected()->setDocComment('/** @var ' . $type . ' */')->getNode();
-        }
-
-        /** @var Field $field */
-        foreach ($definition->fields as $field) {
-            if ($field->name === IdField::class) {
-                continue;
-            }
-
-            $setterMethodName = 'set' . ucfirst($field->getPropertyName());
-            $getterMethodName = 'get' . ucfirst($field->getPropertyName());
-
-            if ($this->hasMethod($classMethods, $setterMethodName) || $this->hasMethod($classMethods, $getterMethodName)) {
-                continue;
-            }
-
             $type = TypeMapping::mapToPhpType($field, false, $definition);
-
             if ($field->isNullable()) {
                 $type = '?' . $type;
             }
 
-            $method = new ClassMethod(new Identifier($setterMethodName));
-            $method->flags = Class_::MODIFIER_PUBLIC;
-            $method->returnType = new Identifier('void');
-            $method->params = [new Param(new Name('$value'), null, new Name($type))];
+            $node = $builder
+                ->property($field->getPropertyName())
+                ->setType($type)
+                ->makePublic();
 
-            $var = new PropertyFetch(new Variable('this'), new Name($field->getPropertyName()));
-            $method->stmts[] = new Expression(new Assign($var, new Variable('value')));
+            if ($field->isNullable()) {
+                $node = $node->setDefault(null);
+            }
 
-            $class->stmts[] = $method;
-
-            $method = new ClassMethod(new Identifier($getterMethodName));
-            $method->flags = Class_::MODIFIER_PUBLIC;
-            $method->returnType = new Identifier($type);
-
-            $method->stmts[] = new Return_($var);
-
-            $class->stmts[] = $method;
+            $class->stmts[] = $node
+                ->getNode();
         }
 
         $printer = new Standard();

@@ -49,7 +49,7 @@ use Shopware\Core\Framework\DataAbstractionLayer\Field\VersionField;
 
 class MigrationSchemaBuilder
 {
-    private DefinitionInstanceRegistry $instanceRegistry;
+    private readonly DefinitionInstanceRegistry $instanceRegistry;
 
     public function __construct(DefinitionInstanceRegistry $instanceRegistry)
     {
@@ -93,7 +93,7 @@ class MigrationSchemaBuilder
             $table->addColumn($field->getStorageName(), $type, $options);
         }
 
-        $table->setPrimaryKey(array_map(function (StorageAware  $field) {return $field->getStorageName();}, $definition->getPrimaryKeys()->getElements()));
+        $table->setPrimaryKey(array_map(fn(StorageAware  $field) => $field->getStorageName(), $definition->getPrimaryKeys()->getElements()));
         $this->addForeignKeys($table, $definition);
     }
 
@@ -191,7 +191,7 @@ class MigrationSchemaBuilder
                 break;
 
             default:
-                throw new \RuntimeException(sprintf('Unknown field %s', \get_class($field)));
+                throw new \RuntimeException(sprintf('Unknown field %s', $field::class));
         }
 
         return [

@@ -2,6 +2,7 @@
 
 namespace Frosh\DevelopmentHelper\Command;
 
+use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -10,17 +11,16 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\Filesystem\Filesystem;
 
+#[AsCommand('frosh:make:plugin', description: 'Generates a plugin')]
 class MakePlugin extends Command
 {
-    private string $pluginFolderDir;
+    private readonly string $pluginFolderDir;
 
     public function __construct(string $kernelRootDir)
     {
         parent::__construct();
         $this->pluginFolderDir = $kernelRootDir . '/custom/plugins/';
     }
-
-    public static $defaultName = 'frosh:make:plugin';
 
     public function configure(): void
     {
@@ -116,19 +116,12 @@ EOL;
 
     private function makeChangelogFiles(Filesystem $fs, string $pluginPath): void
     {
-        $deChangelog = <<<EOL
-# 1.0.0
-
-- Initiale Veröffentlichung
-EOL;
-
         $enChangelog = <<<EOL
 # 1.0.0
 
 - Initial publication
 EOL;
-        $fs->dumpFile($pluginPath . '/CHANGELOG_de-DE.md', $deChangelog);
-        $fs->dumpFile($pluginPath . '/CHANGELOG_en-GB.md', $enChangelog);
+        $fs->dumpFile($pluginPath . '/CHANGELOG.md', $enChangelog);
     }
 
     private function makeDefaultServicesXml(Filesystem $fs, string $pluginPath): void

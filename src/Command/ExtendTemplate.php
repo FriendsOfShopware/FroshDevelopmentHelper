@@ -2,6 +2,7 @@
 
 namespace Frosh\DevelopmentHelper\Command;
 
+use Symfony\Component\Console\Attribute\AsCommand;
 use Frosh\DevelopmentHelper\Component\Twig\BlockCollector;
 use Shopware\Core\Framework\Adapter\Cache\CacheClearer;
 use Symfony\Component\Console\Command\Command;
@@ -13,25 +14,20 @@ use Symfony\Component\Console\Question\Question;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\Filesystem\Filesystem;
 
+#[AsCommand('frosh:extend:template', description: 'Generates the template extension for you')]
 class ExtendTemplate extends Command
 {
-    public static $defaultName = 'frosh:extend:template';
-    private BlockCollector $blockCollector;
-    private array $pluginInfos;
-    private CacheClearer $cacheClearer;
+    private readonly CacheClearer $cacheClearer;
 
-    public function __construct(BlockCollector $blockCollector, array $pluginInfos, CacheClearer $cacheClearer)
+    public function __construct(private readonly BlockCollector $blockCollector, private readonly array $pluginInfos, CacheClearer $cacheClearer)
     {
         parent::__construct();
-        $this->blockCollector = $blockCollector;
-        $this->pluginInfos = $pluginInfos;
         $this->cacheClearer = $cacheClearer;
     }
 
     protected function configure()
     {
         $this
-            ->setDescription('Generates the template extension for you')
             ->addArgument('pluginName', InputArgument::REQUIRED, 'Plugin Name');
     }
 

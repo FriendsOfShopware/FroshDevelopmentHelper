@@ -2,6 +2,7 @@
 
 namespace Frosh\DevelopmentHelper\Command;
 
+use Symfony\Component\Console\Attribute\AsCommand;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Schema\Comparator;
 use Frosh\DevelopmentHelper\Component\Generator\Migration\MigrationSchemaBuilder;
@@ -9,32 +10,24 @@ use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
+#[AsCommand('frosh:schema:diff', description: 'Diffs the database structure with the known definitions')]
 class SchemaDiff extends Command
 {
-    private MigrationSchemaBuilder $builder;
-    private Connection $connection;
+    private readonly Connection $connection;
 
-    public function __construct(MigrationSchemaBuilder $builder, Connection $connection)
+    public function __construct(private readonly MigrationSchemaBuilder $builder, Connection $connection)
     {
         parent::__construct();
-        $this->builder = $builder;
         $this->connection = $connection;
-    }
-
-    protected static $defaultName = 'frosh:schema:diff';
-
-    public function configure(): void
-    {
-        $this->setDescription('Diffs the database structure with the known definitions');
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $localSchema = $this->builder->build();
-        $remoteSchema = $this->connection->getSchemaManager()->createSchema();
+        $remoteSchema = $this->connection->createSchemaManager()->introspectSchema();
 
         $comparator = new Comparator();
-        $sqls = $comparator->compare($remoteSchema, $localSchema)->toSaveSql($this->connection->getDatabasePlatform());
+        $sqls = $comparator->compareSchemas($remoteSchema, $localSchema)->toSaveSql($this->connection->getDatabasePlatform());
 
         $output->writeln($sqls);
 

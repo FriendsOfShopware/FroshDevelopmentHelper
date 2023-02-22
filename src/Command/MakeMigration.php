@@ -2,6 +2,7 @@
 
 namespace Frosh\DevelopmentHelper\Command;
 
+use Symfony\Component\Console\Attribute\AsCommand;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Schema\Comparator;
 use Doctrine\DBAL\Schema\Schema;
@@ -14,28 +15,20 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\Filesystem\Filesystem;
 
+#[AsCommand('frosh:make:migration', description: 'Generates a migration')]
 class MakeMigration extends Command
 {
-    public static $defaultName = 'frosh:make:migration';
-
-    private string $projectDir;
-    private DefinitionInstanceRegistry $definitionInstanceRegistry;
-    private MigrationSchemaBuilder $migrationSchemaBuilder;
-    private Connection $connection;
-    private array $pluginInfos;
+    private readonly DefinitionInstanceRegistry $definitionInstanceRegistry;
+    private readonly Connection $connection;
 
     public function __construct(
-        string $kernelRootDir,
-        array $pluginInfos,
+        private readonly array $pluginInfos,
         DefinitionInstanceRegistry $definitionInstanceRegistry,
-        MigrationSchemaBuilder $migrationSchemaBuilder,
+        private readonly MigrationSchemaBuilder $migrationSchemaBuilder,
         Connection $connection
     ) {
         parent::__construct();
-        $this->projectDir = $kernelRootDir;
         $this->definitionInstanceRegistry = $definitionInstanceRegistry;
-        $this->migrationSchemaBuilder = $migrationSchemaBuilder;
-        $this->pluginInfos = $pluginInfos;
         $this->connection = $connection;
     }
 
@@ -46,11 +39,9 @@ class MakeMigration extends Command
             ->addArgument('definition', InputArgument::IS_ARRAY, 'Definition name');
     }
 
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $io = new SymfonyStyle($input, $output);
-
-        $plugin = $this->projectDir . '/custom/plugins/' . $input->getArgument('plugin');
 
         $toSchema = new Schema();
         foreach ($input->getArgument('definition') as $name) {
@@ -58,10 +49,10 @@ class MakeMigration extends Command
             $this->migrationSchemaBuilder->buildSchemaOfDefinition($toSchema, $definition);
         }
 
-        $fromSchema = $this->connection->getSchemaManager()->createSchema();
+        $fromSchema = $this->connection->createSchemaManager()->introspectSchema();
 
         $comparator = new Comparator();
-        $updateQueries = $comparator->compare($fromSchema, $toSchema)->toSaveSql($this->connection->getDatabasePlatform());
+        $updateQueries = $comparator->compareSchemas($fromSchema, $toSchema)->toSaveSql($this->connection->getDatabasePlatform());
 
         if (\count($updateQueries) === 0) {
             $io->success('Schema is already up to date');
@@ -102,7 +93,7 @@ PHP;
         $dbalExec = '';
 
         foreach ($updateQueries as $sql) {
-            $dbalExec .= sprintf('        $connection->executeUpdate(\'%s\');' . PHP_EOL, addslashes($sql));
+            $dbalExec .= sprintf('        $connection->executeUpdate(\'%s\');' . PHP_EOL, addslashes((string) $sql));
         }
 
         $content = str_replace(

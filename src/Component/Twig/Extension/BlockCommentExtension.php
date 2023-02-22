@@ -9,20 +9,14 @@ use Twig\Extension\AbstractExtension;
 
 class BlockCommentExtension extends AbstractExtension
 {
-    /**
-     * @var string
-     */
-    private $kernelRootDir;
-
-    private array $twigExcludeKeywords;
-
-    public function __construct(string $kernelRootDir, array $twigExcludeKeywords)
+    public function __construct(private readonly string $kernelRootDir, private readonly array $twigExcludeKeywords)
     {
-        $this->kernelRootDir = $kernelRootDir;
-        $this->twigExcludeKeywords = $twigExcludeKeywords;
     }
 
-    public function getNodeVisitors()
+    /**
+     * @return BlogCommentNodeVisitor[]
+     */
+    public function getNodeVisitors(): array
     {
         return [new BlogCommentNodeVisitor($this->kernelRootDir, $this->twigExcludeKeywords)];
     }

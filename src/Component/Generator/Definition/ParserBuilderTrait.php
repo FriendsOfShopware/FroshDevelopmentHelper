@@ -2,6 +2,7 @@
 
 namespace Frosh\DevelopmentHelper\Component\Generator\Definition;
 
+use PhpParser\Node\Expr\Array_;
 use Frosh\DevelopmentHelper\Component\Generator\Struct\Field;
 use Frosh\DevelopmentHelper\Component\Generator\UseHelper;
 use PhpParser\Node\Arg;
@@ -42,9 +43,9 @@ trait ParserBuilderTrait
         foreach ($elementArgs as $arg) {
             switch (gettype($arg)) {
                 case 'string':
-                    if (strpos($arg, '::class') !== false) {
+                    if (str_contains($arg, '::class')) {
                         $args[] = new Arg(new ClassConstFetch(new Name('\\' . substr($arg, 0, -7)), new Identifier('class')));
-                    } elseif (strpos($arg, '::') !== false) {
+                    } elseif (str_contains($arg, '::')) {
                         [$firstPart, $secondPart] = explode('::', $arg, 2);
                         $args[] = new Arg(new ClassConstFetch(new Name('\\' . $firstPart), new Identifier($secondPart)));
                     } else {
@@ -62,7 +63,7 @@ trait ParserBuilderTrait
                     $args[] = new Arg(new ConstFetch(new Name($arg ? 'true' : 'false')));
                     break;
                 case 'array':
-                    $args[] = new Arg(new Expr\Array_());
+                    $args[] = new Arg(new Array_());
                     break;
                 default:
                     throw new \RuntimeException('Invalid type ' . gettype($arg));
