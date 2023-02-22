@@ -11,6 +11,7 @@ use PhpParser\Node\Stmt\ClassMethod;
 use PhpParser\NodeFinder;
 use PhpParser\ParserFactory;
 use Shopware\Core\Framework\DataAbstractionLayer\DefinitionInstanceRegistry;
+use Shopware\Core\Kernel;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\Filesystem\Filesystem;
 
@@ -25,9 +26,12 @@ class EntityLoader
      */
     private $instanceRegistry;
 
-    public function __construct(DefinitionInstanceRegistry $instanceRegistry)
+    private Kernel $kernel;
+
+    public function __construct(DefinitionInstanceRegistry $instanceRegistry, Kernel $kernel)
     {
         $this->instanceRegistry = $instanceRegistry;
+        $this->kernel = $kernel;
     }
 
     public function load(string $class, SymfonyStyle $io): Definition
@@ -194,8 +198,7 @@ class EntityLoader
 
     private function getNewEntityFolder(string $namespace): string
     {
-        global $classLoader;
-        $prefixes = $classLoader->getPrefixesPsr4();
+        $prefixes = $this->kernel->getPluginLoader()->getClassLoader()->getPrefixesPsr4();
 
         $namespaceSplit = explode('\\', $namespace);
         unset($namespaceSplit[count($namespaceSplit)  -1 ]);
