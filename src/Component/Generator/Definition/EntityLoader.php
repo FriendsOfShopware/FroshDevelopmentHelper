@@ -2,6 +2,14 @@
 
 namespace Frosh\DevelopmentHelper\Component\Generator\Definition;
 
+use PhpParser\Node\Expr\Array_;
+use PhpParser\Node\Stmt\Use_;
+use PhpParser\Node\Expr\New_;
+use PhpParser\Node\Expr\MethodCall;
+use PhpParser\Node\Scalar\String_;
+use PhpParser\Node\Scalar\LNumber;
+use PhpParser\Node\Expr\ClassConstFetch;
+use PhpParser\Node\Expr\ConstFetch;
 use Frosh\DevelopmentHelper\Component\Generator\Struct\Definition;
 use Frosh\DevelopmentHelper\Component\Generator\Struct\Field;
 use Frosh\DevelopmentHelper\Component\Generator\Struct\Flag;
@@ -108,7 +116,12 @@ class EntityLoader
             $flags = [];
             /** @var Node\Expr\New_ $exprNew */
             $exprNew = null;
-            if ($item->value instanceof Node\Expr\MethodCall) {
+            if ($item->value instanceof MethodCall) {
+                // Ignore remove flags
+                if ((string) $item->value->name !== 'addFlags') {
+                    continue;
+                }
+
                 foreach ($item->value->args as $arg) {
                     $flags[] = new Flag($this->getFQCN((string) $arg->value->class), $this->parserArgumentsToPhp($arg->value->args));
                 }
@@ -152,6 +165,9 @@ class EntityLoader
                     }
 
                     $args[] = $value;
+                    break;
+                case $arg->value instanceof Array_:
+                    $args[] = $this->parserArgumentsToPhp($arg->value->items);;
                     break;
                 default:
                     throw new \RuntimeException('Type not supported: ' . get_class($arg->value));
