@@ -42,16 +42,16 @@ class CreateService extends Command
         $io = new SymfonyStyle($input, $output);
         $question = new Question('Service Name');
         $question->setAutocompleterValues(array($input->getArgument('pluginName')));
-        $chosenFile = $io->askQuestion($question);
+        $chosenServiceName = $io->askQuestion($question);
 
-        if ($chosenFile === null) {
+        if ($chosenServiceName === null) {
             throw new \RuntimeException('Service Name is required');
         }
 
         $fs = new Filesystem();
 
         $serviceFolderPath = $pluginPath . '/Service/';
-        $servicePath = $serviceFolderPath . $chosenFile . '.php';
+        $servicePath = $serviceFolderPath . $chosenServiceName . '.php';
 
         if (!file_exists($serviceFolderPath)) {
             $fs->mkdir($serviceFolderPath);
@@ -96,7 +96,7 @@ TPL;
                 ],
                 [
                     $input->getArgument('pluginName'),
-                    $chosenFile
+                    $chosenServiceName
                 ],
                 $tpl
             );
