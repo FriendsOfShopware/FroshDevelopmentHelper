@@ -55,7 +55,7 @@ Asks for the block you want to extend and creates the twig extension file for yo
 ### Generate Event Subscriber
 
 ```shell
-ddev exec bin/console frosh:make:event-subscriber <plugin-name>
+./bin/console frosh:make:event-subscriber <plugin-name>
 ```
 
 Asks for the name of event subscriber.
