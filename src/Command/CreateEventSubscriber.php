@@ -13,9 +13,9 @@ use Symfony\Component\Console\Question\Question;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\Filesystem\Filesystem;
 
-class CreateService extends Command
+class CreateEventSubscriber extends Command
 {
-    public static $defaultName = 'frosh:create:service';
+    public static $defaultName = 'frosh:create:eventSubscriber';
     private BlockCollector $blockCollector;
     private array $pluginInfos;
     private CacheClearer $cacheClearer;
@@ -31,7 +31,7 @@ class CreateService extends Command
     protected function configure()
     {
         $this
-            ->setDescription('Generates a service for you')
+            ->setDescription('Generates a event subscriber for you')
             ->addArgument('pluginName', InputArgument::REQUIRED, 'Plugin Name');
     }
 
@@ -40,27 +40,27 @@ class CreateService extends Command
         $pluginPath = $this->determinePluginPath($input->getArgument('pluginName'));
 
         $io = new SymfonyStyle($input, $output);
-        $question = new Question('Service Name');
+        $question = new Question('Event subscriber name');
         $question->setAutocompleterValues(array($input->getArgument('pluginName')));
-        $chosenServiceName = $io->askQuestion($question);
+        $chosenEventSubscriberName = $io->askQuestion($question);
 
-        if ($chosenServiceName === null) {
-            throw new \RuntimeException('Service Name is required');
+        if ($chosenEventSubscriberName === null) {
+            throw new \RuntimeException('Event subscriber name is required');
         }
 
         $fs = new Filesystem();
 
-        $serviceFolderPath = $pluginPath . '/Service/';
-        $servicePath = $serviceFolderPath . $chosenServiceName . '.php';
+        $subscriberFolderPath = $pluginPath . '/Service/';
+        $subscriberPath = $subscriberFolderPath . $chosenEventSubscriberName . '.php';
 
-        if (!file_exists($serviceFolderPath)) {
-            $fs->mkdir($serviceFolderPath);
+        if (!file_exists($subscriberFolderPath)) {
+            $fs->mkdir($subscriberFolderPath);
         }
 
-        if (!file_exists(dirname($servicePath))) {
-            $fs->mkdir(dirname($servicePath));
+        if (!file_exists(dirname($subscriberPath))) {
+            $fs->mkdir(dirname($subscriberPath));
         }
-        if (!file_exists($servicePath)) {
+        if (!file_exists($subscriberPath)) {
             $tpl = <<<TPL
 <?php declare(strict_types=1);
 
@@ -96,14 +96,14 @@ TPL;
                 ],
                 [
                     $input->getArgument('pluginName'),
-                    $chosenServiceName
+                    $chosenEventSubscriberName
                 ],
                 $tpl
             );
 
-            $fs->dumpFile($servicePath, $content);
+            $fs->dumpFile($subscriberPath, $content);
 
-            $io->success(sprintf('Created file at "%s"', $servicePath));
+            $io->success(sprintf('Created file at "%s"', $subscriberPath));
         } 
 
         $this->cacheClearer->clear();
