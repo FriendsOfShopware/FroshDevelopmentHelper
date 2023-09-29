@@ -1,3 +1,7 @@
+# 1.0.2
+
+- Fixed compatibility with neno_hero_slider but is hopefully also helpful for other plugins
+
 # 1.0.1
 
 - fix: formatting of values when they are nullable, fixes #52 by @shyim in https://github.com/FriendsOfShopware/FroshDevelopmentHelper/pull/55
