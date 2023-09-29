@@ -62,3 +62,12 @@ Usage:
      Kernel::getConnection()->getConfiguration()->setSQLLogger(
          new \Frosh\DevelopmentHelper\Doctrine\EchoSQLLogger()
      );
+
+## Known issues
+
+### Some HTML is not rendered correctly when this plugin is active 💣
+
+This plugin can cause problems with blocks, due to the feature to show the block name as HTML comment.
+If you encounter such issues with your plugin or project, you can configure this in [config/packages/frosh_development_helper.yaml](https://github.com/FriendsOfShopware/FroshDevelopmentHelper/blob/main/src/Resources/config/packages/frosh_development_helper.yaml)
+
+There is a predefined list of pattern which likely would cause such problems - feel free to provide a pull request with more such generic patterns.
