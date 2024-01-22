@@ -16,10 +16,10 @@
         }
     },
     "require": {
-        "shopware/core": "~6.5.0",
+        "shopware/core": "~6.6.0",
         "nikic/php-parser": "*",
         "friendsofphp/php-cs-fixer": "*",
-        "psy/psysh": "^0.11.9"
+        "psy/psysh": "*"
     },
     "extra": {
         "shopware-plugin-class": "Frosh\\DevelopmentHelper\\FroshDevelopmentHelper",

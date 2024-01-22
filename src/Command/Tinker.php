@@ -20,7 +20,7 @@ class Tinker extends Command
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $this->getApplication()->setCatchExceptions(false);
+        $this->getApplication()?->setCatchExceptions(false);
 
         $config = new Configuration([
             'updateCheck' => 'never',
