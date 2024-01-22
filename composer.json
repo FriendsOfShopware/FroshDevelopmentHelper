@@ -1,6 +1,6 @@
 {
     "name": "frosh/development-helper",
-    "version": "2.0.0",
+    "version": "1.0.3",
     "description": "Development Helper",
     "type": "shopware-platform-plugin",
     "license": "MIT",
@@ -16,7 +16,7 @@
         }
     },
     "require": {
-        "shopware/core": "~6.6.0",
+        "shopware/core": "~6.5.0 || ~6.6.0",
         "nikic/php-parser": "*",
         "friendsofphp/php-cs-fixer": "*",
         "psy/psysh": "*"
