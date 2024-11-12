@@ -10,3 +10,4 @@ frosh_development_helper:
       - sitemap
       - srcset
       - title
+      - style
