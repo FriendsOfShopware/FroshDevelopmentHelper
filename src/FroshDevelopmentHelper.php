@@ -21,7 +21,6 @@ class FroshDevelopmentHelper extends Plugin
     {
         $container->addCompilerPass(new DisableTwigCacheCompilerPass());
         $container->addCompilerPass(new CustomProfilerExtensions());
-        $container->addCompilerPass(new BuildEntityDefinitionNamesCompilerPass());
 
         $this->buildConfig($container);
 
