@@ -2,7 +2,6 @@
 
 namespace Frosh\DevelopmentHelper;
 
-use Frosh\DevelopmentHelper\Component\DependencyInjection\BuildEntityDefinitionNamesCompilerPass;
 use Frosh\DevelopmentHelper\Component\DependencyInjection\CustomProfilerExtensions;
 use Frosh\DevelopmentHelper\Component\DependencyInjection\DisableTwigCacheCompilerPass;
 use Frosh\DevelopmentHelper\Component\DependencyInjection\FroshDevelopmentHelperExtension;
@@ -46,10 +45,5 @@ class FroshDevelopmentHelper extends Plugin
         $confDir = $this->getPath() . '/Resources/config';
 
         $configLoader->load($confDir . '/{packages}/*' . Kernel::CONFIG_EXTS, 'glob');
-    }
-
-    public function executeComposerCommands(): bool
-    {
-        return true;
     }
 }
