@@ -3,6 +3,11 @@
 Successor plugin of FroshProfiler and FroshMailCatcher
 
 ## Installation
+```bash
+composer require frosh/development-helper --dev
+bin/console plugin:refresh
+bin/console plugin:install --activate 
+```
 
 ## Git Version
 
