@@ -11,3 +11,4 @@ frosh_development_helper:
       - srcset
       - title
       - style
+      - form_create_action
