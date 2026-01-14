@@ -12,3 +12,6 @@ frosh_development_helper:
       - title
       - style
       - form_create_action
+      - '@Administration/shared/page-loading-screen/page-loading-screen.js'
+      - component_head_analytics_gtag_config
+      - address_manager_modal_address_form_create
