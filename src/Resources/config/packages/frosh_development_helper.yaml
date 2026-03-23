@@ -15,3 +15,5 @@ frosh_development_helper:
       - '@Administration/shared/page-loading-screen/page-loading-screen.js'
       - component_head_analytics_gtag_config
       - address_manager_modal_address_form_create
+      - utilities_alert
+      - '@Storefront/storefront/utilities/alert.html.twig'
