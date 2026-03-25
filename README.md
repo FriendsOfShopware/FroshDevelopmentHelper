@@ -57,17 +57,6 @@ Checks the difference of that definition with the database and creates a migrati
 
 Asks for the block you want to extend and creates the twig extension file for you
 
-### SQL Logger for Console Debugging
-
-Prints executed SQL to the console, in such a way that they can be easily copied to other SQL tools for further
-debugging. This is similar to the symfony debug bar, but useful in CLI commands and tests.
-
-Usage:
-
-     Kernel::getConnection()->getConfiguration()->setSQLLogger(
-         new \Frosh\DevelopmentHelper\Doctrine\EchoSQLLogger()
-     );
-
 ## Known issues
 
 ### Some HTML is not rendered correctly when this plugin is active 💣
