@@ -17,3 +17,4 @@ frosh_development_helper:
       - address_manager_modal_address_form_create
       - utilities_alert
       - '@Storefront/storefront/utilities/alert.html.twig'
+      - '@Framework/snippets/symbol/'
