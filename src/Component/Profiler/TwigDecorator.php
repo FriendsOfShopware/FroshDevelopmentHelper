@@ -2,10 +2,10 @@
 
 namespace Frosh\DevelopmentHelper\Component\Profiler;
 
-use Twig\Environment;
+use Shopware\Core\Framework\Adapter\Twig\TwigEnvironment;
 use Twig\TemplateWrapper;
 
-class TwigDecorator extends Environment
+class TwigDecorator extends TwigEnvironment
 {
     private array $renders = [];
 
